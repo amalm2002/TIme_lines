@@ -1,0 +1,258 @@
+<!-- include header -->
+<%- include('../layout/admin/header') %>
+<!-- include header -->
+
+    <body>
+        <style>
+            .btn-edit {
+                background-color: #007bff;
+                color: white;
+            }
+
+            .btn-delete {
+                background-color: #dc3545;
+                color: white;
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: 10px;
+            }
+
+            .action-column {
+                width: 150px;
+            }
+
+            .form-section {
+                margin-bottom: 30px;
+            }
+        </style>
+        </head>
+
+        <body>
+            <div class="container mt-5">
+                <h2>Category Management</h2>
+
+                <!-- Categories Table -->
+                <table class="table table-bordered table-hover mt-3">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th class="action-column">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                        <% categorys.forEach((cat, index)=> { %>
+                            <tr id="category-<%= cat._id %>">
+                                <td>
+                                    <%= index + 1 %>
+                                </td>
+                                <td>
+                                    <%= cat.name %>
+                                </td>
+                                <td>
+                                    <%= cat.description %>
+                                </td>
+                                <td class="action-buttons">
+                                    <button class="btn btn-edit"
+                                        onclick="startEditCategory('<%= cat._id %>', '<%= cat.name %>', '<%= cat.description %>')">Edit</button>
+                                    <button class="btn btn-delete"
+                                        onclick="deleteCategory('<%= cat._id %>')">Delete</button>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+
+                <!-- Edit Category Form -->
+                <div class="form-section" id="editCategorySection" style="display: none;">
+                    <h4>Edit Category</h4>
+                    <form id="editCategoryForm">
+                        <input type="hidden" id="editCategoryId">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="editCategoryName" placeholder="Category Name"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control" id="editCategoryDescription"
+                                placeholder="Category Description" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+                    </form>
+                </div>
+
+                <!-- Add Category Form -->
+                <div class="form-section">
+                    <h4>Add Category</h4>
+                    <form id="addCategoryForm">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="addCategoryName" placeholder="Category Name"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control" id="addCategoryDescription"
+                                placeholder="Category Description" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                    </form>
+                </div>
+                <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                <script>
+                    //add categories
+
+                    document.getElementById('addCategoryForm').addEventListener('submit', async (event) => {
+                        event.preventDefault();
+
+                        const name = document.getElementById('addCategoryName').value;
+                        const description = document.getElementById('addCategoryDescription').value;
+
+                        try {
+
+                            // check if the category already exist
+                            const checkResponse = await fetch(`/admin/checkCategory?name=${encodeURIComponent(name)}`)
+                            const checkData = await checkResponse.json()
+
+                            if (checkData.exists) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Category already exists. Please add another category.'
+                                }); return
+                            }
+
+                            const response = await fetch('/admin/addCategories', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ name, description })
+                            });
+
+                            if (response.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'Category added successfully.'
+                                }).then(() => {
+                                    document.getElementById('addCategoryForm').reset();
+                                    window.location.reload();
+                                });
+                            } else {
+                                const data = await response.json();
+                                console.error('Error adding category:', data);
+                            }
+                        } catch (error) {
+                            console.error('Error submitting form:', error);
+                        }
+                    });
+                </script>
+                <script>
+
+                    //update categories
+                    document.getElementById('editCategoryForm').addEventListener('submit', async (event) => {
+                        event.preventDefault();
+
+                        const id = document.getElementById('editCategoryId').value;
+                        const name = document.getElementById('editCategoryName').value;
+                        const description = document.getElementById('editCategoryDescription').value;
+
+                        try {
+                            const response = await fetch(`/admin/updateCategories/${id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ name, description })
+                            });
+
+                            if (response.ok) {
+                                const row = document.getElementById(`category-${id}`);
+                                if (row) {
+                                    row.querySelector('td:nth-child(2)').textContent = name;
+                                    row.querySelector('td:nth-child(3)').textContent = description;
+                                }
+                                window.location.reload();
+
+                                cancelEdit();
+                            } else {
+                                const data = await response.json();
+                                console.error('Error updating category:', data);
+                            }
+                        } catch (error) {
+                            console.error('Error submitting form:', error);
+                        }
+                    });
+
+                    function startEditCategory(id, name, description) {
+                        document.getElementById('editCategoryId').value = id;
+                        document.getElementById('editCategoryName').value = name;
+                        document.getElementById('editCategoryDescription').value = description;
+                        document.getElementById('editCategorySection').style.display = 'block';
+                    }
+
+                    function cancelEdit() {
+                        document.getElementById('editCategoryForm').reset();
+                        document.getElementById('editCategorySection').style.display = 'none';
+                    }
+
+                </script>
+
+                <script>
+
+
+                    //delete categories
+                    async function deleteCategory(id) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: 'You will not be able to recover this category!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, delete it!',
+                            cancelButtonText: 'No, cancel!',
+                            reverseButtons: true
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                try {
+                                    const response = await fetch(`/admin/customer/${id}`, {
+                                        method: 'DELETE'
+                                    });
+
+                                    if (response.ok) {
+                                        const row = document.getElementById(`category-${id}`);
+                                        if (row) {
+                                            row.remove();
+                                        }
+
+                                        // Update numbering
+                                        const rows = document.querySelectorAll('#categoryTableBody tr');
+                                        rows.forEach((row, index) => {
+                                            row.querySelector('td:nth-child(1)').textContent = index + 1;
+                                        });
+
+                                        Swal.fire('Deleted!', 'Category has been deleted.', 'success');
+                                    } else {
+                                        const data = await response.json();
+                                        console.error('Error deleting category:', data);
+                                        Swal.fire('Error', 'Failed to delete category', 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error deleting category:', error);
+                                    Swal.fire('Error', 'Failed to delete category', 'error');
+                                }
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                Swal.fire('Cancelled', 'Category deletion was cancelled', 'info');
+                            }
+                        });
+                    }
+
+                </script>
+
+        </body>
+
+        </html>

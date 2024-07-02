@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/userSignUp.css">
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 0.25em;
+        }
+        .is-invalid {
+            border-color: red;
+        }
+        .password-input {
+            position: relative;
+        }
+        .btn-toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            padding: 0;
+        }
+        .btn-icon {
+            color: black;
+        }
+        .fa-eye-slash:before {
+            content: "\f070"; /* Font Awesome eye-slash icon */
+        }
+        .fa-eye:before {
+            content: "\f06e"; /* Font Awesome eye icon */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 welcome-back">
+                <div class="welcome">
+                    <h1>Welcome Back!</h1>
+                    <p>To keep connected with us please login with your personal info</p>
+                    <a href="/userSignin"><button class="btn btn-light" id="signInBtn">SIGN IN</button></a>
+                </div>
+            </div>
+            <div class="col-md-6 create-account">
+                <h1>Create Account</h1>
+                <div class="social-container">
+                    <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="auth/google/callback" class="social"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <span>or use your email for registration</span>
+                <span style="color: orangered;">Password must include at least one number, one symbol, and one uppercase character</span>
+                <form id="signUpForm">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Name" class="form-control" id="name">
+                        <div class="error" id="nameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" class="form-control" id="email">
+                        <div class="error" id="emailError"></div>
+                    </div>
+                    <div class="form-group password-input">
+                        <input type="password" name="password" placeholder="Password" class="form-control" id="password">
+                        <button type="button" id="togglePassword" class="btn-icon btn-toggle-password">
+                            <i id="passwordIcon" class="fa fa-eye-slash"></i>
+                        </button>
+                        <div class="error" id="passwordError"></div>
+                    </div>
+                    <div class="form-group password-input">
+                        <input type="password" name="conformpassword" placeholder="Confirm Password" class="form-control" id="conformpassword">
+                        <button type="button" id="toggleConfirmPassword" class="btn-icon btn-toggle-password">
+                            <i id="confirmPasswordIcon" class="fa fa-eye-slash"></i>
+                        </button>
+                        <div class="error" id="conformpasswordError"></div>
+                    </div>
+                    <button class="btn btn-primary" id="sign-up" type="submit">SIGN UP</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('signUpForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Clear previous error messages
+            document.querySelectorAll('.error').forEach(error => error.textContent = '');
+            document.querySelectorAll('.form-control').forEach(input => input.classList.remove('is-invalid'));
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const conformpassword = document.getElementById('conformpassword').value.trim();
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, password, conformpassword })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const fieldErrors = data.fieldErrors || {};
+
+                if (fieldErrors.name) {
+                    document.getElementById('name').classList.add('is-invalid');
+                    document.getElementById('nameError').textContent = 'Please enter your name';
+                }
+                if (fieldErrors.email) {
+                    document.getElementById('email').classList.add('is-invalid');
+                    document.getElementById('emailError').textContent = 'Please enter a valid email';
+                }
+                if (fieldErrors.password) {
+                    document.getElementById('password').classList.add('is-invalid');
+                    document.getElementById('passwordError').textContent = 'Please check your password structure';
+                }
+                if (fieldErrors.conformpassword) {
+                    document.getElementById('conformpassword').classList.add('is-invalid');
+                    document.getElementById('conformpasswordError').textContent = 'Passwords do not match';
+                }
+            } else {
+                window.location.href = data.redirectUrl;
+            }
+        });
+
+        // Toggle Password Visibility
+        const togglePasswordButton = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('password');
+        const passwordIcon = document.getElementById('passwordIcon');
+
+        togglePasswordButton.addEventListener('click', function () {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+
+            if (type === 'password') {
+                passwordIcon.classList.add('fa-eye-slash');
+                passwordIcon.classList.remove('fa-eye');
+            } else {
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        });
+
+        const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
+        const confirmPasswordField = document.getElementById('conformpassword');
+        const confirmPasswordIcon = document.getElementById('confirmPasswordIcon');
+
+        toggleConfirmPasswordButton.addEventListener('click', function () {
+            const type = confirmPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPasswordField.setAttribute('type', type);
+
+            if (type === 'password') {
+                confirmPasswordIcon.classList.add('fa-eye-slash');
+                confirmPasswordIcon.classList.remove('fa-eye');
+            } else {
+                confirmPasswordIcon.classList.remove('fa-eye-slash');
+                confirmPasswordIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Clear error messages on input
+        document.getElementById('name').addEventListener('input', () => {
+            document.getElementById('name').classList.remove('is-invalid');
+            document.getElementById('nameError').textContent = '';
+        });
+
+        document.getElementById('email').addEventListener('input', () => {
+            document.getElementById('email').classList.remove('is-invalid');
+            document.getElementById('emailError').textContent = '';
+        });
+
+        document.getElementById('password').addEventListener('input', () => {
+            document.getElementById('password').classList.remove('is-invalid');
+            document.getElementById('passwordError').textContent = '';
+        });
+
+        document.getElementById('conformpassword').addEventListener('input', () => {
+            document.getElementById('conformpassword').classList.remove('is-invalid');
+            document.getElementById('conformpasswordError').textContent = '';
+        });
+    </script>
+</body>
+</html>
