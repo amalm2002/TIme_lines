@@ -7,13 +7,13 @@ const otpSchema = new mongoose.Schema({
         ref: 'User'
     },
     otp: {
-        type: String, // Use String to avoid issues with leading zeros
+        type: String, 
         required: true
     },
     createdAt: {
         type: Date,
         default: Date.now,
-        index: { expires: '2m' } // OTP expires after 5 minutes
+        index: { expires: '2m' } 
     },
     email:{
         type:String

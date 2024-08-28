@@ -13,7 +13,7 @@ passport.use(
     function (accessToken,refreshToken,profile,callback) {
         console.log('profile Data');
         console.log(process.env.CLIENT_ID),
-        console.log("poyyui",profile);
+        // console.log("poyyui",profile);
         callback(null,profile)
     }
 ))

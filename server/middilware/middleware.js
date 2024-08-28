@@ -1,8 +1,9 @@
 const ensureAuthenticated = (req, res, next) => {
-    if ("this ",req.session.user) {
+    console.log("req.session.user: ", req.session.user);
+    if (req.session.user) {
         return next();
     }
-    res.redirect('/');
+    res.redirect('/register');
 };
 
 const forwardAuthenticated = (req, res, next) => {

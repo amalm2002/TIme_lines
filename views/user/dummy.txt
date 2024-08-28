@@ -1,0 +1,364 @@
+
+
+
+admin orderlist page code 
+
+
+ <body>
+        <div class="container">
+            <h1>Order Management</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Offer Price</th>
+                        <th>Order Status</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Payment Status</th>
+                        <!-- <th>Order Status</th> -->
+                        <!-- <th>Actions</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <%orders.forEach(order=>{%>
+                        <%order.productItems.forEach(item=>{%>
+                            <tr>
+                                <td data-label="Product">
+                                    <img src="/images/products/<%=item.productId?.images[0]%>"
+                                        alt="<%=item.productId?.images[0]%>" class="product-image">
+                                    <%=item.productName%>
+                                </td>
+                                <td data-label="Name"><%= order.userName%>
+                                </td>
+                                <td data-label="Quantity">
+                                    <%= item.quantity%>
+                                </td>
+                                <td data-label="Price">₹<%= item.total%>
+                                </td>
+                                <td data-label="Price">₹<%= item.offerPrice%>
+                                </td>
+                                <td data-label="Order Status">
+                                 <%if(order.status === 'Paid'){%>
+                                    
+                                     <% if(item.status !=='delivered' && item.status!=='canceled' &&
+                                        item.status!=='Request for returned' && item.status!=='returned' &&
+                                        item.status!=='rejected' ) { %>
+                                        <select class="status-dropdown" data-order-id="<%= order._id %>"
+                                            data-pro-id="<%= item.productId?._id%>" onchange="updateOrderStatus(this)">
+                                            <option value="pending" <% if(item.status==='pending' ) { %> selected <% }
+                                                    %>>Pending</option>
+                                            <option value="processing" <% if(item.status==='processing' ) { %> selected
+                                                <% } %>>Processing
+                                            </option>
+                                            <option value="shipping" <% if(item.status==='shipping' ) { %> selected <% }
+                                                    %>>Shipping</option>
+                                            <option value="delivered" <% if(item.status==='delivered' ) { %> selected <%
+                                                    } %>>Delivered</option>
+                                        </select>
+                                        <% } else if(item.status==='canceled' ) { %>
+                                            <a href="/admin/canceledOrder/<%=order._id%>"
+                                                style="color: #fb8237;">canceled</a>
+                                            <% }else if(item.status==='Request for returned' ){%>
+                                                <a href="/admin/returnOrder/<%=order._id%>" title="">Requested for
+                                                    Return</a>
+                                                <% }else if(item.status==='returned' ){%>
+                                                    <a href="/admin/returnAccept/<%=order._id%>" title="">Return
+                                                        Accepted</a>
+                                                    <% }else if(item.status==='rejected' ){%>
+                                                        <a href="/admin/returnRejected/<%=order._id%>"
+                                                            style="color: red;" title="">Return rejected</a>
+                                                        <%}else{%>
+                                                            <a href="/admin/deliveredOrder/<%=order._id%>"
+                                                                style="color: #1c4a1e;">delivered</a>
+                                                            <%} %>
+                                                            <%}else{%>
+                                                                <span style="color: black;">N/A</span>
+                                 <%}%>                       
+                                </td>
+                                <td data-label="Date">
+                                    <%=new Date(order.dateOrdered).toLocaleDateString() %>
+                                </td>
+                                <td data-label="Payment Method">
+                                    <%= order.paymentMethod%>
+                                </td>
+                                <td data-label="Status">
+                                    <% if (order.status === 'Failed') { %>
+                                        <span style="color: red;"><%= order.status %></span>
+                                    <% } else if (order.status === 'Paid') { %>
+                                        <span style="color: green;"><%= order.status %></span>
+                                    <% } %>
+                                </td>
+                                
+                         
+                            </tr>
+                            <!-- Add more rows as needed -->
+                            <%})%>
+                                <%})%>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            function updateOrderStatus(selectStatus) {
+                const selectedValue = selectStatus.value;
+                const orderId = selectStatus.getAttribute('data-order-id');
+                const productId = selectStatus.getAttribute('data-pro-id');
+
+
+                fetch('/admin/updateOrderStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        status: selectedValue,
+                        productId: productId
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        window.location.reload()
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                    });
+            }
+
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </body>
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+orderlist page user side
+
+
+<div class="order-container">
+  <h1>Your Orders</h1>
+  <% if (orders.length === 0) { %>
+      <div class="no-orders-animation">
+          <lottie-player src="https://lottie.host/d2969b27-77c2-49e4-85bd-e7c57bd73758/NjB1X4SEYL.json" 
+                         background="transparent" 
+                         speed="1" 
+                         style="width: 300px; height: 300px; margin: 0 auto;" 
+                         loop 
+                         autoplay>
+          </lottie-player>
+          <p class="no-orders-message" style=" color: #525050;">No orders found.</p>
+      </div>
+  <% } else { %>
+      <% orders.forEach(order => { %>
+          <% if (order.paymentStatus === 'Paid') { %>
+              <!-- Display all products if the order is "Paid" -->
+              <% order.productItems.forEach(product => { %>
+                  <div class="order-item">
+                      <div class="product-image">
+                          <img src="/images/products/<%= product.productId.images[0] %>" alt="<%= product.productName %>">
+                      </div>
+                      <div class="product-details">
+                          <h2><%= product.productName %></h2>
+                          <p class="status"><span class="status-dot"></span> <%= product.status %></p>
+                          <div class="order-summary">
+                              <p>Payment Method: <%= order.paymentMethod %></p>
+                              <p>Order Date: <%= new Date(order.dateOrdered).toLocaleDateString() %></p>
+                          </div>
+                      </div>
+                      <div class="price-view">
+                          <% if (product.displayPrice !== product.originalPrice) { %>
+                              <p class="offer-price">₹<%= product.displayPrice %></p>
+                              <p class="original-price">₹<%= product.originalPrice %></p>
+                              <p class="discount-percentage"><%= product.discountPercentage.toFixed(0) %>% OFF</p>
+                          <% } else { %>
+                              <p class="price">₹<%= product.displayPrice %></p>
+                          <% } %>
+                          <a href="/orderDetails/<%= order._id %>?productId=<%= product.productId._id %>">
+                              <button class="view-btn">View</button>
+                          </a>
+                      </div>
+                  </div>
+              <% }) %>
+          <% } else if (order.paymentStatus === 'Failed') { %>
+              <!-- Display summary information if the order is "Failed" -->
+              <div class="order-item">
+                  <div class="product-details">
+                      <h2>Order ID: <%= order._id %></h2>
+                      <p class="status" style="color: red;"><span style="color: #071114;">Payment Status:</span> <%= order.status %> Payment</p>
+                      <div class="order-summary">
+                          <p style="color: #071114; font-weight: 700;">Total Amount: <span style="font-weight: bold; color: green;"> ₹<%= order.totalPrice %></span></p>
+                          <% if (order.couponId) { %>
+                              <p class="coupon"style="color: #071114; font-weight: 700;">Coupon Discount: ₹<%= order.couponDiscount %></p>
+                          <% } %>
+                          <% let totalProductCount = 0; %>
+                          <% order.productItems.forEach(product => { %>
+                              <% totalProductCount += product.quantity; %>
+                          <% }) %>
+                    
+                          <p>Total Quantity: <%= totalProductCount %></p>
+                      </div>
+                  </div>
+                  <div class="price-view">
+                      <a href="/failedPayment/<%= order._id %>">
+                          <button class="view-btn">Failed Payments</button>
+                      </a>
+                  </div>
+              </div>
+          <% } %>
+      <% }) %>
+  <% } %>
+</div>
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+return reason admin page
+
+ <body>
+        <header>
+            <h1>Returned Orders</h1>
+        </header>
+
+        <main class="returned-orders-container">
+            <% requestReturn.forEach(item => { %>
+                <div class="order-card">
+                    <div class="product-image">
+                        <img src="/images/products/<%= item.productId?.images[0] %>" alt="<%= item.productName %>">
+                    </div>
+                    <div class="order-details">
+                        <div class="user-info">
+                            <h2><%= order.userName %></h2>
+                            <p class="address">
+                                <%= order.billingAddress[0].street %>, <%= order.billingAddress[0].city %>, <%= order.billingAddress[0].country %>
+                            </p>
+                        </div>
+                        <div class="product-info">
+                            <h3><%= item.productName %></h3>
+                            <p class="price">₹<%= item.total %></p>
+                            <p class="quantity">Quantity: <%= item.quantity %></p>
+                            <p class="paymentMethod"><%= order.paymentMethod %></p>
+                        </div>
+                        <div class="return-reason">
+                            <label for="reason">Return Reason:
+                                <p style="font-weight: 300;"><%= item.returnReason %></p>
+                            </label>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="accept" id="acceptBtn" data-order-id="<%= order._id %>"
+                                data-pro-id="<%= item.productId?._id %>">Accept</button>
+                            <button class="reject" id="rejectBtn" data-order-id="<%= order._id %>"
+                                data-pro-id="<%= item.productId?._id %>">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </main>
+        
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.accept').forEach(button => {
+                    button.addEventListener('click', async function () {
+                        const orderId = this.getAttribute('data-order-id');
+                        const productId = this.getAttribute('data-pro-id');
+                        const reasonAcceptStatus = 'returned';
+
+                        try {
+                            const response = await fetch('/admin/updateRetrunStatus', {
+                                method: 'post',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ orderId, productId, reasonAcceptStatus })
+                            });
+                            const result = await response.json();
+
+                            if (response.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: 'Return request accepted successfully!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                setTimeout(() => {
+                                    window.location.href = '/admin/orderPage';
+                                }, 1500);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Failed to update the status',
+                                });
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred.',
+                            });
+                            console.error('Error in accepting return request:', error);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.reject').forEach(rejectButton => {
+                    rejectButton.addEventListener('click', async function () {
+                        const orderId = this.getAttribute('data-order-id');
+                        const productId = this.getAttribute('data-pro-id');
+                        const reasonRejectedStatus = 'rejected';
+
+                        try {
+                            const response = await fetch('/admin/rejectRetrunStatus', {
+                                method: 'post',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ orderId, productId, reasonRejectedStatus })
+                            });
+                            const result = await response.json();
+
+                            if (response.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: 'Return request rejected successfully!',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                setTimeout(() => {
+                                    window.location.href = '/admin/orderPage';
+                                }, 1500);
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Failed to reject the status',
+                                });
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred.',
+                            });
+                            console.error('Error in rejecting return request:', error);
+                        }
+                    });
+                });
+            });
+
+
+        </script>
+    </body>

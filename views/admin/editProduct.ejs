@@ -1,0 +1,281 @@
+<%- include('../layout/admin/header') %>
+
+    <body>
+        <div class="container mt-4">
+            <h1 class="mb-4">Edit Product</h1>
+            <form id="editProductForm" enctype="multipart/form-data">
+                <input type="hidden" id="editProductId" value="<%= product._id %>">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Product Name</label>
+                    <input type="text" name="name" class="form-control" id="name" value="<%=product.name%>">
+                </div>
+                <div class="mb-3">
+                    <label for="brand" class="form-label">Brand</label>
+                    <select name="brand" id="brand" required class="form-control">
+                        <option value=""><%=product.brand?.name%></option>
+                        <% brands.forEach((brand)=> { %>
+                            <option value="<%= brand._id %>" <%=product.brand===brand.name ? 'selected' : '' %>><%=
+                                    brand.name %>
+                            </option>
+                            <% }) %>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="modelNumber" class="form-label">Model Number</label>
+                    <input type="text" name="modelNumber" class="form-control" id="modelNumber"
+                        value="<%=product.modelNumber%>">
+                </div>
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select name="category" id="category" required class="form-control">
+                        <!-- <option value="">select category</option> -->
+                        <option value=""><%=product.category?.name%></option>
+                        <% category?.forEach((cat)=> { %>
+                            <option value="<%= cat._id %>" <%=product.category===cat.name ? 'selected' : '' %>><%=
+                                    cat.name %>
+                            </option>
+                            <!-- <input type="text " value="<%=cat.name%>"> -->
+                            <% }) %>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price</label>
+                    <input type="number" name="price" class="form-control" id="price" min="0" step="0.01"
+                        value="<%=product.price%>">
+                </div>
+                <div class="mb-3">
+                    <label for="productOffer" class="form-label">Product Offer</label>
+                    <input type="number" name="productOffer" class="form-control" id="productOffer" value="<%=product.productOffer%>">
+                </div>
+               
+                <div class="mb-3">
+                    <label for="offerEndDate" class="form-label">Offer End Date</label>
+                    <input type="date" name="offerEndDate" class="form-control" id="offerEndDate" value="<%= new Date(product.productOfferEndDate) %>" >
+                    <small class="form-text text-muted">The end date of the offer.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="stockQuantity" class="form-label">Stock Quantity</label>
+                    <input type="number" name="stockQuantity" class="form-control" id="stockQuantity" min="0"
+                        value="<%=product.stockQuantity%>">
+                </div>
+                <div class="mb-3">
+                    <label for="warranty" class="form-label">Warranty</label>
+                    <input type="text" name="warranty" class="form-control" id="warranty" value="<%=product.warranty%>">
+                </div>
+                <div class="mb-3">
+                    <label for="images" class="form-label">Images</label>
+                    <input type="file" name="images" class="form-control" id="images" multiple>
+                    <small class="form-text text-muted">You can select up to 3 images.</small>
+                </div>
+                <div id="imagePreviews" class="mb-3"></div>
+                <div id="croppingArea" class="d-none">
+                    <h5 class="mb-3">Crop Image</h5>
+                    <div class="img-container">
+                        <img id="cropImage" src="#" alt="Crop Image">
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-muted">Use the cropping tool to adjust the image as needed.</p>
+                        <button type="button" class="btn btn-secondary" id="cancelCrop">Cancel</button>
+                        <button type="button" class="btn btn-success" id="saveCroppedImage">Save Cropped Image</button>
+                    </div>
+                </div>
+                <div id="existingImages" class="mb-3 d-flex">
+                    <% if (product.images && product.images.length> 0){ %>
+                        <% product.images.forEach((image, index)=> { %>
+                            <div class="d-flex align-items-center mb-2 existing-image-container"
+                                data-index="<%= index %>">
+                                <img src="/images/products/<%= image %>" class="img-thumbnail"
+                                    style="max-width: 150px; max-height: 150px; margin-right: 10px;">
+                                <button type="button" class="btn btn-danger remove-existing-image"
+                                    data-index="<%= index %>">Remove</button>
+                            </div>
+                            <% }) %>
+                                <% } %>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" class="form-control" id="description"
+                        rows="3"><%=product.description%></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">save Product</button>
+            </form>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('editProductForm');
+                const imageInput = document.getElementById('images');
+                const existingImagesContainer = document.getElementById('existingImages');
+                const imagePreviews = document.getElementById('imagePreviews');
+                const croppingArea = document.getElementById('croppingArea');
+                let cropper;
+                let currentImage;
+                let fileList = [];
+                let existingImages = [];
+
+                // Handle file input change
+                imageInput.addEventListener('change', function () {
+                    const files = Array.from(this.files);
+                    if (files.length + fileList.length > 3) {
+                        alert('You can only select up to 3 images.');
+                        this.value = '';
+                        return;
+                    }
+                    updateFileList(files);
+                    displaySelectedImages();
+                });
+
+                // Update file list
+                function updateFileList(newFiles) {
+                    newFiles.forEach(file => {
+                        if (fileList.length + existingImages.length < 3) {
+                            fileList.push(file);
+                        }
+                    });
+                }
+
+                // Display selected images
+                function displaySelectedImages() {
+                    imagePreviews.innerHTML = '';
+                    fileList.forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'image-preview-container mb-3';
+                            imageContainer.innerHTML = `
+                                <div class="d-flex align-items-center">
+                                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px; margin-right: 10px;">
+                                    <button type="button" class="btn btn-primary crop-image">Crop</button>
+                                    <button type="button" class="btn btn-danger remove-image">Remove</button>
+                                </div>
+                            `;
+                            imagePreviews.appendChild(imageContainer);
+                            addImageListeners(imageContainer, file);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                // Add listeners to image buttons
+                function addImageListeners(container, file) {
+                    const cropButton = container.querySelector('.crop-image');
+                    const removeButton = container.querySelector('.remove-image');
+                    cropButton.addEventListener('click', function () {
+                        const img = container.querySelector('img');
+                        document.getElementById('cropImage').src = img.src;
+                        croppingArea.classList.remove('d-none');
+                        currentImage = img;
+                        if (cropper) {
+                            cropper.destroy();
+                        }
+                        cropper = new Cropper(document.getElementById('cropImage'), {
+                            aspectRatio: 1,
+                            viewMode: 2,
+                            autoCropArea: 1,
+                            responsive: true,
+                            background: false,
+                            zoomable: true,
+                            ready: function () {
+                                const canvasData = cropper.getCanvasData();
+                                canvasData.width = canvasData.height = 300;
+                                cropper.setCanvasData(canvasData);
+                            },
+                        });
+                    });
+                    removeButton.addEventListener('click', function () {
+                        const index = fileList.findIndex(f => f.name === file.name);
+                        if (index !== -1) {
+                            fileList.splice(index, 1);
+                            displaySelectedImages();
+                        }
+                    });
+                }
+
+                document.getElementById('saveCroppedImage').addEventListener('click', function () {
+                    if (cropper && currentImage) {
+                        const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+                        currentImage.src = canvas.toDataURL();
+                        cropper.destroy();
+                        cropper = null;
+                        croppingArea.classList.add('d-none');
+                    }
+                });
+
+                document.getElementById('cancelCrop').addEventListener('click', function () {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                    croppingArea.classList.add('d-none');
+                });
+
+                // Handle form submission
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    existingImages.forEach(img => {
+                        formData.append('existingImages[]', img);
+                    });
+                    // fileList.forEach(file => formData.append('images', file));
+
+                    for (const [key, value] of formData.entries()) {
+                        console.log(`${key}:`, value);
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/editProduct/${document.getElementById('editProductId').value}`, {
+                            method: 'PUT',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log("Product updated successfully:", data);
+                            window.location.href = '/admin/products';
+                        } else {
+                            const errorData = await response.json();
+                            console.log("Error updating product:", errorData);
+                        }
+                    } catch (error) {
+                        console.error('Error on edit product:', error);
+                    }
+                });
+
+                // Remove existing images
+                existingImagesContainer.addEventListener('click', function (event) {
+                    if (event.target.classList.contains('remove-existing-image')) {
+                        const index = parseInt(event.target.getAttribute('data-index'), 10);
+                        const imageContainer = document.querySelector(`.existing-image-container[data-index='${index}']`);
+                        if (imageContainer) {
+                            existingImagesContainer.removeChild(imageContainer);
+                            existingImages.splice(index, 1);
+                            Array.from(existingImagesContainer.children).forEach((child, i) => {
+                                child.setAttribute('data-index', i);
+                            });
+                        }
+                    }
+                });
+
+                function populateExistingImages() {
+                    existingImages = Array.from(existingImagesContainer.querySelectorAll('img')).map(img => img.src);
+                }
+
+                populateExistingImages();
+            });
+        </script>
+
+
+
+    </body>
+
+    </html>

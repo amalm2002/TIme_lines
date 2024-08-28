@@ -11,6 +11,7 @@ const bodyparser = require("body-parser");
 const path = require("path");
 const session = require("express-session");
 const { v4: uuidv4 } = require("uuid");
+require('./utils/offerExpiryJob')
 
 const app = express();
 app.use(express.json());
@@ -57,9 +58,9 @@ app.use((req,res,next)=>{
     res.status(404).render('404')
 })
 
-app.use((err,req,res,next)=>{
-
-})
+// app.use((err,req,res,next)=>{
+//     res.status(500).render('500')
+// })
 
 app.listen(PORT, () => {
     console.log(`Server is started on http://localhost:${PORT}`);

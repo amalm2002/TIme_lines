@@ -1,0 +1,250 @@
+<%- include('../layout/admin/header') %>
+    <style>
+        .container {
+            max-width: 1255px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .status-dropdown {
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .cancel-btn,
+        .return-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cancel-btn {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .return-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .cancel-btn:hover,
+        .return-btn:hover {
+            opacity: 0.8;
+        }
+
+        @media screen and (max-width: 600px) {
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                margin-bottom: 15px;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+            }
+
+            td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: bold;
+            }
+        }
+    </style>
+
+    <body>
+        <div class="container">
+            <h1>Order Management</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>OrderId</th>
+                        <th>Name</th>
+                        <th>Quantity</th>
+                        <th>Coupon Discount</th>
+                        <th>Offers</th>
+                        <th>Orginal Order Price</th>
+                        <th>Total Order Price</th>
+                        <th>Order Status</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Payment Status</th>
+                        <!-- <th>Order Status</th> -->
+                        <!-- <th>Actions</th> -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <%orders.forEach(order=>{%>
+        
+                            <tr>
+                                <td data-label="Product">
+                                    <%=order._id%>
+                                </td>
+                                <td data-label="Name"><%= order.userName%>
+                                </td>
+                                <td data-label="Quantity">
+                                    <%= order.totalQuantity%>
+                                </td>
+                                <td data-label="Quantity">
+                                    <%= order.couponDiscount%>
+                                </td>
+                                <td data-label="Quantity">
+                                    <%= order.discount%>
+                                </td>
+                                <td data-label="Price">₹<%= order.originalPrice%>
+                                </td>
+                                <td data-label="Price">₹<%= order.totalPrice%>
+                                </td>
+                                <td data-label="Order Status">
+                                 <%if(order.paymentStatus === 'Paid'){%>
+                                    
+                                     <% if(order.status !=='Delivered' && order.status!=='Cancelled' &&
+                                        order.status!=='Request for returned' && order.status!=='Returned' &&
+                                        order.status!=='Rejected' ) { %>
+                                        <select class="status-dropdown" data-order-id="<%= order._id %>"
+                                            data-pro-id="<%= order.productId?._id%>" onchange="updateOrderStatus(this)">
+                                            <option value="Pending" <% if(order.status==='Pending' ) { %> selected <% }
+                                                    %>>Pending</option>
+                                            <option value="Processing" <% if(order.status==='Processing' ) { %> selected
+                                                <% } %>>Processing
+                                            </option>
+                                            <option value="Shipping" <% if(order.status==='Shipping' ) { %> selected <% }
+                                                    %>>Shipping</option>
+                                            <option value="Delivered" <% if(order.status==='Delivered' ) { %> selected <%
+                                                    } %>>Delivered</option>
+                                        </select>
+                                        <% } else if(order.status==='Cancelled' ) { %>
+                                            <a href="/admin/canceledOrder/<%=order._id%>"
+                                                style="color: #fb8237;">Cancelled</a>
+                                            <% }else if(order.status==='Request for returned' ){%>
+                                                <a href="/admin/returnOrder/<%=order._id%>" title="">Requested for
+                                                    Return</a>
+                                                <% }else if(order.status==='Returned' ){%>
+                                                    <a href="/admin/returnAccept/<%=order._id%>" title="">Return
+                                                        Accepted</a>
+                                                    <% }else if(order.status==='Rejected' ){%>
+                                                        <a href="/admin/returnRejected/<%=order._id%>"
+                                                            style="color: red;" title="">Return rejected</a>
+                                                        <%}else{%>
+                                                            <a href="/admin/deliveredOrder/<%=order._id%>"
+                                                                style="color: #1c4a1e;">delivered</a>
+                                                            <%} %>
+                                                            <%}else{%>
+                                                                <span style="color: black;">N/A</span>
+                                 <%}%>                       
+                                </td>
+                                <td data-label="Date">
+                                    <%=new Date(order.dateOrdered).toLocaleDateString() %>
+                                </td>
+                                <td data-label="Payment Method">
+                                    <%= order.paymentMethod%>
+                                </td>
+                                <td data-label="Status">
+                                    <% if (order.paymentStatus === 'Failed') { %>
+                                        <span style="color: red;"><%= order.paymentStatus %></span>
+                                    <% } else if (order.paymentStatus === 'Paid') { %>
+                                        <span style="color: green;"><%= order.paymentStatus %></span>
+                                    <% } %>
+                                </td>
+                                
+                                <!-- <td data-label="Payment Method">
+                                    <a href=""> view</a>
+                                </td> -->
+
+                            </tr>
+                            <!-- Add more rows as needed -->
+                            <%})%>
+                    
+                </tbody>
+            </table>
+        </div>
+        <script>
+            function updateOrderStatus(selectStatus) {
+                const selectedValue = selectStatus.value;
+                const orderId = selectStatus.getAttribute('data-order-id');
+                const productId = selectStatus.getAttribute('data-pro-id');
+
+
+                fetch('/admin/updateOrderStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        status: selectedValue,
+                        productId: productId
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        window.location.reload()
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                    });
+            }
+
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </body>

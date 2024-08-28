@@ -1,0 +1,279 @@
+<%- include('../layout/user/header') %>
+    <%- include('../layout/userProfile/sidebar') %>
+
+        <style>
+            .wishlist-container {
+                width: 100%;
+                max-width: 1000px;
+                margin: 0 auto;
+                font-family: Arial, sans-serif;
+            }
+
+            .no-wishlist-animation {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                /* Center the animation horizontally */
+                justify-content: center;
+                margin: 0 auto;
+                height: calc(100vh - 200px);
+                /* Adjust height to vertically center */
+            }
+
+            .no-wishlist-animation lottie-player {
+                margin: 0 auto;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .wishlist-item {
+                display: flex;
+                padding: 20px 0;
+                border-bottom: 1px solid #e0e0e0;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .wishlist-product-image {
+                flex: 0 0 100px;
+                margin-right: 20px;
+            }
+
+            .wishlist-product-image img {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .wishlist-product-details {
+                flex: 1;
+            }
+
+            h2 {
+                font-size: 16px;
+                margin: 0 0 10px 0;
+                color: #333;
+            }
+
+            .wishlist-rating {
+                display: inline-block;
+                background-color: #388e3c;
+                color: white;
+                padding: 2px 5px;
+                border-radius: 3px;
+                font-size: 14px;
+                margin-right: 5px;
+            }
+
+            .wishlist-reviews {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .wishlist-price {
+                font-size: 18px;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+
+            .wishlist-original-price {
+                text-decoration: line-through;
+                color: #666;
+                font-size: 14px;
+                margin-left: 5px;
+            }
+
+            .wishlist-discount {
+                color: #388e3c;
+                font-size: 14px;
+                margin-left: 5px;
+            }
+
+            .wishlist-actions {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .wishlist-buy-btn,
+            .wishlist-remove-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            }
+
+            .wishlist-buy-btn {
+                font-size: 16px;
+                font-weight: bold;
+                text-decoration: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+
+            }
+
+            .wishlist-buy-btn img {
+                width: 24px;
+                height: 24px;
+                opacity: 0.6;
+            }
+
+            .wishlist-remove-btn img {
+                width: 20px;
+                height: 20px;
+                opacity: 0.6;
+            }
+        </style>
+
+        <div class="wishlist-container">
+            <% if (wishlist.length===0) { %>
+                <div class="no-wishlist-animation">
+                    <lottie-player src="https://lottie.host/dbc70848-c943-45f4-b267-3fe6690f642e/C0r22qk9Z7.json"
+                        background="##FFFFFF" speed="1" style="width: 300px; height: 300px;" loop autoplay>
+                    </lottie-player>
+                    <h3>Your wishlist is empty.</h3>
+                </div>
+                <% } else { %>
+                    <h1>My Wishlist</h1>
+                    <% wishlist.forEach(product=> { %>
+
+                        <div class="wishlist-item">
+                            <div class="wishlist-product-image">
+                                <img src="/images/products/<%= product.images[0] %>" alt="<%= product.name %>">
+                            </div>
+                            <div class="wishlist-product-details">
+                                <h2>
+                                    <%= product.name %>
+                                </h2>
+                                <!-- <span class="wishlist-rating"></span> -->
+                                <span class="wishlist-reviews">
+                                    <%=product.description%>
+                                </span>
+                                <div class="wishlist-price">
+                                    <% if (product.productOffer || product.categoryOfferamount) { %>
+                                        <% const offerPrice=product.productOffer || product.categoryOfferamount; const
+                                            originalPrice=product.price; const discountPercentage=Math.round((1 -
+                                            (offerPrice / originalPrice)) * 100); %>
+                                            <span class="wishlist-discount">
+                                                ₹<%= offerPrice %>.00
+                                                    <span style="text-decoration: line-through; color: red;">₹<%=
+                                                            originalPrice %>.00</span>
+                                                    <span class="wishlist-discount-percentage">
+                                                        <%= discountPercentage %>% off
+                                                    </span>
+                                            </span>
+                                            <% } else { %>
+                                                <span class="wishlist-price-current">
+                                                    ₹<%= product.price %>.00
+                                                </span>
+                                                <% } %>
+                                </div>
+
+
+                            </div>
+
+                            <div class="wishlist-actions">
+                                <% if (product.stockQuantity> 0) { %>
+                                    <form action="/addCart" method="POST" class="wishlist-add-to-cart-form">
+                                        <input type="hidden" name="productId" value="<%= product._id %>">
+                                        <button type="submit" class="wishlist-buy-btn">
+                                            <img src="/images/icons/shopping-cart_6672324.png" alt="Buy Now">
+                                            Buy Now
+                                        </button>
+                                    </form>
+                                    <% } else { %>
+                                        <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                                        <% } %>
+                                            <form class="wishlist-remove-form" data-product-id="<%= product._id %>">
+                                                <button type="submit" class="wishlist-remove-btn"
+                                                    aria-label="Remove from wishlist">
+                                                    <img src="/images/icons/trash-can-solid.png" alt="Remove">
+                                                </button>
+                                            </form>
+                            </div>
+                        </div>
+                        <% }); %>
+                            <% } %>
+        </div>
+
+
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+        <script>
+            document.querySelectorAll('.wishlist-remove-form').forEach(form => {
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const productId = form.getAttribute('data-product-id');
+                    console.log('productId:', productId);
+
+
+                    const result = await Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'Do you really want to remove this product from your wishlist?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, remove it!'
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch('/removeFromWishlist', {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ productId })
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.success) {
+                                    form.closest('.wishlist-item').remove();
+                                    Swal.fire(
+                                        'Removed!',
+                                        'The product has been removed from your wishlist.',
+                                        'success'
+                                    );
+                                    window.location.reload()
+                                } else {
+                                    Swal.fire(
+                                        'Error!',
+                                        'Failed to remove the product from your wishlist.',
+                                        'error'
+                                    );
+                                }
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    'Failed to delete the product from the wishlist.',
+                                    'error'
+                                );
+                            }
+                        } catch (error) {
+                            console.error('Error removing product from wishlist:', error);
+                            Swal.fire(
+                                'Error!',
+                                'An unexpected error occurred.',
+                                'error'
+                            );
+                        }
+                    }
+                });
+            });
+
+        </script>
+
+        <%- include('../layout/user/footer') %>

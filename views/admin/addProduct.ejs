@@ -1,43 +1,74 @@
 <%- include('../layout/admin/header') %>
 
     <body>
+        <style>
+            .error {
+                color: red;
+                font-size: 0.875em;
+                margin-top: 0.25em;
+            }
+        </style>
         <div class="container mt-4">
             <h1 class="mb-4">Add New Product</h1>
             <form id="addProductForm">
                 <div class="mb-3">
                     <label for="name" class="form-label">Product Name</label>
                     <input type="text" name="name" class="form-control" id="name">
+                    <div class="error" id="nameError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="brand" class="form-label">Brand</label>
-                    <input type="text" name="brand" class="form-control" id="brand">
+                    <select name="brand" id="brand" class="form-control">
+                        <option value="">Select Brand</option>
+                        <% brands?.forEach((brand, idx)=> { %>
+                            <option value="<%= brand._id %>">
+                                <%= brand.name %>
+                            </option>
+                            <% }) %>
+                    </select>
+                    <div class="error" id="brandError"></div>
                 </div>
+
                 <div class="mb-3">
                     <label for="modelNumber" class="form-label">Model Number</label>
                     <input type="text" name="modelNumber" class="form-control" id="modelNumber">
+                    <div class="error" id="modelNumberError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="category" class="form-label">Category</label>
-                    <!-- <input type="text" name="category" class="form-control" id="category"> -->
-                    <!-- <select name="category" class="form-control" id="category" required>
-                        <option value="">select a category</option>
-                        <% categories.forEach(category=>{%>
-                            <option value="<%= category._id>"><%=category.name %></option>
-                            <% })>
-                    </select> -->
+                    <select name="category" id="category" class="form-control">
+                        <option value="">Select Category</option>
+                        <% category?.forEach((cat, idx)=> { %>
+                            <option value="<%= cat._id %>">
+                                <%= cat.name %>
+                            </option>
+                            <% }) %>
+                    </select>
+                    <div class="error" id="categoryError"></div>
                 </div>
+
                 <div class="mb-3">
                     <label for="price" class="form-label">Price</label>
                     <input type="number" name="price" class="form-control" id="price" min="0" step="0.01">
+                    <div class="error" id="priceError"></div>
                 </div>
+
                 <div class="mb-3">
-                    <label for="discountPrice" class="form-label">Discount Price</label>
-                    <input type="number" name="discountPrice" class="form-control" id="discountPrice" min="0"
-                        step="0.01" value="0">
+                    <label for="productOffer" class="form-label">Product Offer</label>
+                    <input type="number" name="offerProduct" class="form-control" id="productOffer" min="0">
+                    <div class="error" id="productOfferError"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="offerEndDate" class="form-label">Offer End Date</label>
+                    <input type="date" name="offerEndDate" class="form-control" id="offerEndDate">
+                    <small class="form-text text-muted">The end date of the offer.</small>
+                    <div class="error" id="offerEndDateError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="stockQuantity" class="form-label">Stock Quantity</label>
                     <input type="number" name="stockQuantity" class="form-control" id="stockQuantity" min="0">
+                    <div class="error" id="stockQuantityError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="warranty" class="form-label">Warranty</label>
@@ -47,38 +78,27 @@
                     <label for="images" class="form-label">Images</label>
                     <input type="file" name="images" class="form-control" id="images" multiple>
                     <small class="form-text text-muted">You can select up to 3 images.</small>
+                    <div class="error" id="imagesError"></div>
                 </div>
                 <div id="imagePreviews" class="mb-3"></div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea name="description" class="form-control" id="description" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Product</button>
-            </form>
-        </div>
-
-        <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- Larger Modal -->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div id="croppingArea" class="d-none">
+                    <h5 class="mb-3">Crop Image</h5>
+                    <div class="img-container">
+                        <img id="cropImage" src="#" alt="Crop Image">
                     </div>
-                    <div class="modal-body">
-                        <div class="img-container">
-                            <img id="cropImage" src="#" alt="Crop Image">
-                        </div>
-                        <div class="mt-3">
-                            <p class="text-muted">Use the cropping tool to adjust the image as needed. Click "Save
-                                Cropped Image" to apply changes.</p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <div class="mt-3">
+                        <p class="text-muted">Use the cropping tool to adjust the image as needed.</p>
+                        <button type="button" class="btn btn-secondary" id="cancelCrop">Cancel</button>
                         <button type="button" class="btn btn-success" id="saveCroppedImage">Save Cropped Image</button>
                     </div>
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" class="form-control" id="description" rows="3"></textarea>
+                    <div class="error" id="descriptionError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Product</button>
+            </form>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -86,43 +106,44 @@
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <!-- Cropper.js -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const imageInput = document.getElementById('images');
                 const imagePreviews = document.getElementById('imagePreviews');
+                const croppingArea = document.getElementById('croppingArea');
                 let cropper;
                 let currentImage;
+                let fileList = [];
 
-                // Validate image selection
                 imageInput.addEventListener('change', function () {
-                    const files = this.files;
-                    if (files.length > 3) {
-                        alert('You can only select up to 3 images.');
-                        this.value = '';
-                        imagePreviews.innerHTML = '';
-                        return;
-                    }
-                    displaySelectedImages(files);
+                    const newFiles = Array.from(this.files);
+                    const mergedFiles = [...fileList, ...newFiles].slice(0, 3);
+
+                    updateFileList(mergedFiles);
+                    displaySelectedImages();
+                    updateFileInput();
                 });
 
-                // Function to display selected images
-                function displaySelectedImages(files) {
+                function updateFileList(newFiles) {
+                    fileList = newFiles;
+                }
+
+                function displaySelectedImages() {
                     imagePreviews.innerHTML = '';
-                    Array.from(files).forEach(file => {
+
+                    fileList.forEach(file => {
                         const reader = new FileReader();
                         reader.onload = function (e) {
                             const imageContainer = document.createElement('div');
                             imageContainer.className = 'image-preview-container mb-3';
                             imageContainer.innerHTML = `
-                            <div class="d-flex align-items-center">
-                                <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px; margin-right: 10px;">
-                                <button type="button" class="btn btn-primary crop-image" data-bs-toggle="modal" data-bs-target="#cropModal">Crop</button>
-                                <button type="button" class="btn btn-danger remove-image">Remove</button>
-                            </div>
-                        `;
+                                <div class="d-flex align-items-center">
+                                    <img src="${e.target.result}" class="img-thumbnail" style="max-width: 150px; max-height: 150px; margin-right: 10px;">
+                                    <button type="button" class="btn btn-primary crop-image">Crop</button>
+                                    <button type="button" class="btn btn-danger remove-image">Remove</button>
+                                </div>`;
                             imagePreviews.appendChild(imageContainer);
                             addImageListeners(imageContainer, file);
                         };
@@ -130,13 +151,14 @@
                     });
                 }
 
-                // Add listeners for crop and remove buttons
                 function addImageListeners(container, file) {
                     const cropButton = container.querySelector('.crop-image');
                     const removeButton = container.querySelector('.remove-image');
+
                     cropButton.addEventListener('click', function () {
                         const img = container.querySelector('img');
                         document.getElementById('cropImage').src = img.src;
+                        croppingArea.classList.remove('d-none');
                         currentImage = img;
                         if (cropper) {
                             cropper.destroy();
@@ -148,52 +170,156 @@
                             responsive: true,
                             background: false,
                             zoomable: true,
+                            ready: function () {
+                                const canvasData = cropper.getCanvasData();
+                                canvasData.width = canvasData.height = 300;
+                                cropper.setCanvasData(canvasData);
+                            },
                         });
                     });
+
                     removeButton.addEventListener('click', function () {
-                        container.remove();
+                        const index = fileList.findIndex(f => f.name === file.name);
+                        if (index !== -1) {
+                            fileList.splice(index, 1);
+                            displaySelectedImages();
+                            updateFileInput();
+                        }
                     });
                 }
 
-                // Save cropped image
+                function updateFileInput() {
+                    const dataTransfer = new DataTransfer();
+                    fileList.forEach(file => dataTransfer.items.add(file));
+                    imageInput.files = dataTransfer.files;
+                }
+
                 document.getElementById('saveCroppedImage').addEventListener('click', function () {
                     if (cropper && currentImage) {
-                        const canvas = cropper.getCroppedCanvas();
+                        const canvas = cropper.getCroppedCanvas({
+                            width: 300,
+                            height: 300
+                        });
                         currentImage.src = canvas.toDataURL();
                         cropper.destroy();
                         cropper = null;
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('cropModal'));
-                        modal.hide();
+                        croppingArea.classList.add('d-none');
                     }
                 });
-            });
 
+                document.getElementById('cancelCrop').addEventListener('click', function () {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                    croppingArea.classList.add('d-none');
+                });
+            });
 
             document.getElementById('addProductForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-                const formData = new FormData(event.target);
+                const name = document.getElementById('name').value.trim();
+                const brand = document.getElementById('brand').value.trim();
+                const modelNumber = document.getElementById('modelNumber').value.trim();
+                const category = document.getElementById('category').value.trim();
+                const price = document.getElementById('price').value.trim();
+                const productOffer = document.getElementById('productOffer').value.trim()
+                const offerEndDate = document.getElementById('offerEndDate').value.trim()
+                const stockQuantity = document.getElementById('stockQuantity').value.trim();
+                const description = document.getElementById('description').value.trim();
+                const images = document.getElementById('images').files;
+
+                if (!name || !brand || !modelNumber || !category || !price || !stockQuantity || !description) {
+                    showErrorMessages({ name, brand, modelNumber, category, price, stockQuantity, description });
+                    return;
+                }
+
+                if (productOffer && (!offerEndDate || offerEndDate === '')) {
+                    document.getElementById('offerEndDateError').textContent = 'Offer end date is required when offer is provided.';
+                    document.getElementById('offerEndDateError').style.color = 'red';
+                    return;
+                } else {
+                    document.getElementById('offerEndDateError').textContent = '';
+                }
+
+                if (productOffer) {
+                    if (parseFloat(productOffer) > parseFloat(price)) {
+                        document.getElementById('productOfferError').textContent = 'Offer price cannot be greater than the actual price.';
+                        document.getElementById('productOfferError').style.color = 'red';
+                        return;
+                    } else {
+                        document.getElementById('productOfferError').textContent = '';
+                    }
+
+                    const offerEndDateObj = new Date(offerEndDate);
+                    const today = new Date();
+                    if (offerEndDateObj <= today) {
+                        document.getElementById('offerEndDateError').textContent = 'Offer end date must be a future date.';
+                        document.getElementById('offerEndDateError').style.color = 'red';
+                        return;
+                    } else {
+                        document.getElementById('offerEndDateError').textContent = '';
+                    }
+                }
+
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('brand', brand);
+                formData.append('modelNumber', modelNumber);
+                formData.append('category', category);
+                formData.append('price', price);
+                formData.append('productOffer', productOffer)
+                formData.append('offerEndDate', offerEndDate)
+                formData.append('stockQuantity', stockQuantity);
+                formData.append('description', description);
+                for (let i = 0; i < images.length; i++) {
+                    formData.append('images', images[i]);
+                }
+
                 try {
                     const response = await fetch('/admin/addProducts', {
-                        method: 'post',
+                        method: 'POST',
                         body: formData
                     });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('Product added successfully:', data);
-                        document.getElementById('addProductForm').reset();
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Product Added',
+                            text: result.message,
+                        });
                         window.location.reload();
                     } else {
-                        const errorData = await response.json();
-                        console.error('Error adding product:', errorData);
+                        console.log('failure data:', result);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message,
+                        });
                     }
 
                 } catch (error) {
-                    console.error('Error submitting add product form:', error);
+                    console.error('Error submitting the form', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred.',
+                    });
                 }
             });
-  
+
+            function showErrorMessages(fields) {
+                for (const [field, value] of Object.entries(fields)) {
+                    const errorElement = document.getElementById(`${field}Error`);
+                    if (!value) {
+                        errorElement.textContent = `Please enter ${field}`;
+                        errorElement.style.color = 'red';
+                    } else {
+                        errorElement.textContent = '';
+                    }
+                }
+            }
         </script>
     </body>
 

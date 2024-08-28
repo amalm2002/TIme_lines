@@ -1,0 +1,221 @@
+<%- include('../layout/user/header') %>
+    <%- include('../layout/userProfile/sidebar') %>
+<style>
+                 .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            /* background-color: #ffffff; */
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+            margin-top: -5px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add New Address</h2>
+        <form id="addAddressForm">
+            <input type="text" id="addressStreet" placeholder="Street Address">
+            <!-- <div id="streetError" class="error-message"></div> -->
+
+            <input type="text" id="addressCity" placeholder="City">
+            <!-- <div id="cityError" class="error-message"></div> -->
+
+            <input type="text" id="addressState" placeholder="State/Province">
+            <!-- <div id="stateError" class="error-message"></div> -->
+
+            <input type="text" id="addressPincode" placeholder="ZIP/Pincode">
+            <div id="pincodeError" class="error-message"></div>
+
+            <input type="hidden" id="page" value="<%= page %>">
+
+            <input type="text" id="addressCountry" placeholder="Country">
+            <!-- <div id="countryError" class="error-message"></div> -->
+
+            <button type="submit" class="btn">Save Address</button>
+        </form>
+    </div>
+            </div>
+
+            <script>
+                // Add address
+                document.getElementById('addAddressForm').addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const street = document.getElementById('addressStreet').value;
+                    const city = document.getElementById('addressCity').value;
+                    const state = document.getElementById('addressState').value;
+                    const pincode = document.getElementById('addressPincode').value;
+                    const country = document.getElementById('addressCountry').value;
+                    const page = document.getElementById('page').value;
+
+
+
+                    // document.getElementById('streetError').textContent = '';
+                    // document.getElementById('cityError').textContent = '';
+                    // document.getElementById('stateError').textContent = '';
+                    document.getElementById('pincodeError').textContent = '';
+                    // document.getElementById('countryError').textContent = '';
+
+                    let isValid = true;
+
+                    // if (!street) {
+                    //     document.getElementById('streetError').textContent = 'Street Address is required';
+                    //     isValid = false;
+                    // }
+
+                    // if (!city) {
+                    //     document.getElementById('cityError').textContent = 'City is required';
+                    //     isValid = false;
+                    // }
+
+                    // if (!state) {
+                    //     document.getElementById('stateError').textContent = 'State/Province is required';
+                    //     isValid = false;
+                    // }
+
+                    if (!pincode) {
+                        document.getElementById('pincodeError').textContent = 'ZIP/Pincode is required';
+                        isValid = false;
+                    } else if (!/^\d{6}$/.test(pincode)) {
+                        document.getElementById('pincodeError').textContent = 'Pincode must be a 6-digit number';
+                        isValid = false;
+                    }
+
+                    // if (!country) {
+                    //     document.getElementById('countryError').textContent = 'Country is required';
+                    //     isValid = false;
+                    // }
+
+                    if (!isValid) return;
+                    fetch('/addAddress', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ street, city, state, pincode, country, page })
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.json();
+                            } else {
+                                return response.json().then(errorData => {
+                                    throw new Error(errorData.error);
+                                });
+                            }
+                        })
+                        .then(data => {
+                            console.log(data.page, "==========================================>");
+                            document.getElementById('addAddressForm').reset();
+                            if (data.page === "checkout") {
+                                window.location.href = '/checkout';
+                            } else {
+                                window.location.href = '/address';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error submitting add address form:', error);
+                            alert(error.message);
+                        });
+                });
+
+
+                // const inputFields = ['addressStreet', 'addressCity', 'addressState', 'addressPincode', 'addressCountry'];
+                // inputFields.forEach(id => {
+                //     document.getElementById(id).addEventListener('input', (event) => {
+                //         const errorField = document.getElementById(`${id.replace('address', '').toLowerCase()}Error`);
+                //         if (event.target.value.trim() !== '') {
+                //             errorField.textContent = '';
+                //         }
+                //     });
+                // });
+
+                document.getElementById('addressPincode').addEventListener('input', (event) => {
+                    const pincode = event.target.value;
+                    const pincodeError = document.getElementById('pincodeError');
+
+                    if (!/^\d*$/.test(pincode)) {
+                        pincodeError.textContent = 'Pincode must be a number';
+                    } else if (pincode.length !== 6 && pincode.length > 0) {
+                        pincodeError.textContent = 'Pincode must be exactly 6 digits';
+                    } else {
+                        pincodeError.textContent = '';
+                    }
+                });
+
+                // Delete address
+                async function deleteAddress(addressId) {
+                    try {
+                        const response = await fetch(`/deleteAddress/${addressId}`, {
+                            method: 'delete',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorData = await response.json();
+                            alert(errorData.error);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting address:', error);
+                    }
+                }
+            </script>
+
+
+            <%- include('../layout/user/footer') %>

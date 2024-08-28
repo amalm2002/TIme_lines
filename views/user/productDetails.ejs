@@ -1,0 +1,378 @@
+<!-- include header -->
+<%- include('../layout/user/header') %>
+    <!-- include header -->
+
+    <style>
+        .dummy-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: not-allowed;
+            opacity: 0.65;
+            transition: background-color 0.3s;
+        }
+
+        .dummy-btn:hover {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .container-pro {
+            width: 80%;
+        }
+
+        .wishlist-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .wishlist-icon i {
+            font-size: 18px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-icon:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .wishlist-icon:hover i {
+            color: #fe439f;
+        }
+
+        .wishlist-icon.active i {
+            color: #fe439f;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .offer-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .discount-badge {
+            background-color: #ff6b6b;
+            ;
+            color: white;
+            width: 35%;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            display: inline-block;
+            text-align: center;
+            margin: 0 auto 5px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .discount-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.5) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                top: -50%;
+                left: -50%;
+            }
+
+            100% {
+                top: 150%;
+                left: 150%;
+            }
+        }
+
+        .savings {
+            color: #010101;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .regular-price {
+            font-size: 1.1em;
+            color: #000000;
+            text-align: center;
+        }
+    </style>
+   <section class="page-add cart-page-add">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="page-breadcrumb">
+                        <h2>ProductDetails<span>.</span></h2>
+                        <a href="/">Home</a>
+                        <a href="/productPage">Products</a>
+                        <a class="active" href="">Details</a>
+                    </div>
+                </div>
+                <!-- <div class="col-lg-8">
+                <img src="img/add.jpg" alt="">
+            </div> -->
+            </div>
+        </div>
+    </section>
+    <section class="product-page">
+        <div class="container">
+            <div class="product-control">
+                <!-- <a href="#">Previous</a>
+                <a href="#">Next</a> -->
+            </div>
+            <div class="row">
+    
+                <div class="col-lg-6">
+                    <div id="productCarousel" class="carousel slide" data-ride="carousel">
+                        <div class="carousel-inner">
+                            <% if (products && products.images && products.images.length > 0) { %>
+                                <% products.images.forEach((image, index) => { %>
+                                    <div class="carousel-item <%= index === 0 ? 'active' : '' %>" id="img-container">
+                                        <img src="/images/products/<%= image %>" class="d-block w-100" alt="Product Image">
+                                        <div class="wishlist-icon" data-product-id="<%= products._id %>">
+                                            <i class="far fa-heart"></i>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="carousel-item active">
+                                    <img src="/images/products/default.jpg" class="d-block w-100" alt="Default Image">
+                                </div>
+                            <% } %>
+                        </div>
+                        <a class="carousel-control-prev" href="#productCarousel" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#productCarousel" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                    <div class="product-thumbnails mt-3">
+                        <div class="row">
+                            <% if (products && products.images && products.images.length > 0) { %>
+                                <% products.images.forEach((image, index) => { %>
+                                    <div class="col-4">
+                                        <img src="/images/products/<%= image %>" class="img-thumbnail" alt="Thumbnail" data-target="#productCarousel" data-slide-to="<%= index %>">
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="col-4">
+                                    <img src="/images/products/default.jpg" class="img-thumbnail" alt="Default Thumbnail">
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-lg-6">
+                    <div class="product-content">
+                        <h2>
+                            <%= products && products.name ? products.name : 'Product name not available' %>
+                        </h2>
+                        <div class="pc-meta">
+                            <% if (products && (products.productOffer || products.categoryOfferamount)) { %>
+                                <% 
+                                    let originalPrice = products.price; 
+                                    let offerPrice = products.productOffer || products.categoryOfferamount; 
+                                    let savings = originalPrice - offerPrice; 
+                                    let discountPercentage = Math.round((savings / originalPrice) * 100); 
+                                %>
+                                <div class="price-container">
+                                    <span class="offer-price">₹<%= offerPrice %></span>
+                                    <span class="original-price">₹<%= originalPrice %></span>
+                                    <span class="discount-badge"><%= discountPercentage %>% OFF</span>
+                                </div>
+                                <div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹<%= savings %></span></div>
+                            <% } else { %>
+                                <p class="regular-price">₹<%= products && products.price ? products.price : 'Price not available' %></p>
+                            <% } %>
+                        </div>
+                        <p class="product-description">
+                            <%= products && products.description ? products.description : 'Description not available' %>
+                        </p>
+                        <ul class="tags">
+                            <li><span>Category :</span>
+                                <%= products && products.category && products.category.name ? products.category.name : 'Category not available' %>
+                            </li>
+                            <li><span>Brand :</span>
+                                <%= products && products.brand && products.brand.name ? products.brand.name : 'Brand not available' %>
+                            </li>
+                        </ul>
+                        <% if (products && products.stockQuantity > 0) { %>
+                            <form action="/addCart" method="POST">
+                                <input type="hidden" name="productId" value="<%= products._id %>">
+                                <button type="submit" class="primary-btn pc-btn add-to-cart-btn">Add to Cart</button>
+                            </form>
+                        <% } else { %>
+                            <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="related-products">
+        <div class="container">
+            <div class="section-title">
+                <h2>Related Products</h2>
+            </div>
+            <div class="related-products-grid">
+                <% if (relatedProducts && relatedProducts.length > 0) { %>
+                    <% relatedProducts.forEach((related) => { %>
+                        <div class="related-product-card">
+                            <div class="product-image">
+                                <a href="/productDetails/<%= related._id %>">
+                                    <img src="/images/products/<%= related.images && related.images[0] %>" alt="<%= related.name %>">
+                                </a>
+                                <div class="stock-indicator <%= related.stockQuantity > 0 ? 'in-stock' : 'out-of-stock' %>">
+                                    <%= related.stockQuantity > 0 ? 'In Stock' : 'Out of Stock' %>
+                                </div>
+                                <div class="wishlist-icon" data-product-id="<%= related._id %>">
+                                    <i class="far fa-heart"></i>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <h3><%= related.name %></h3>
+                                <% if (related.productOffer || related.categoryOfferamount) { %>
+                                    <% 
+                                        let originalPrice = related.price; 
+                                        let offerPrice = related.productOffer || related.categoryOfferamount; 
+                                        let savings = originalPrice - offerPrice; 
+                                        let discountPercentage = Math.round((savings / originalPrice) * 100); 
+                                    %>
+                                    <div class="price-container">
+                                        <span class="offer-price">₹<%= offerPrice %></span>
+                                        <span class="original-price">₹<%= originalPrice %></span>
+                                        <span class="discount-badge"><%= discountPercentage %>% OFF</span>
+                                    </div>
+                                    <div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹<%= savings %></span></div>
+                                <% } else { %>
+                                    <p class="regular-price">₹<%= related.price %></p>
+                                <% } %>
+                                <% if (related.stockQuantity > 0) { %>
+                                    <form action="/addCart" method="post">
+                                        <input type="hidden" name="productId" value="<%= related._id %>">
+                                        <button class="add-to-cart-btn">Add to Cart</button>
+                                    </form>
+                                <% } else { %>
+                                    <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>No related products found</p>
+                <% } %>
+            </div>
+            <div class="see-more-container">
+                <a href="/productPage" class="see-more-btn">See More</a>
+            </div>
+        </div>
+    </section>
+    
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script>
+        var options = {
+            width: 300,
+            zoomWidth: 400,
+            offset: {vertical: 0, horizontal: 10}
+        };
+        new ImageZoom(document.getElementById("img-container"), options);
+         
+        </script> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const wishlistIcons = document.querySelectorAll('.wishlist-icon');
+
+
+            const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>'
+            wishlistIcons.forEach(icon => {
+                const productId = icon.getAttribute('data-product-id');
+                const heartIcon = icon.querySelector('i');
+
+
+                if (wishlistProducts.includes(productId)) {
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                    icon.classList.add('active');
+                }
+
+                icon.addEventListener('click', function () {
+                    const isActive = this.classList.contains('active');
+                    this.classList.toggle('active');
+                    if (isActive) {
+                        heartIcon.classList.remove('fas');
+                        heartIcon.classList.add('far');
+                    } else {
+                        heartIcon.classList.remove('far');
+                        heartIcon.classList.add('fas');
+                    }
+
+                    fetch('/addToWishlist', {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ productId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Successfully updated wishlist');
+                            } else {
+                                console.log('Failed to update wishlist');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error updating wishlist:', err);
+                        });
+                });
+            });
+        });
+    </script>
+
+
+    <!-- include footer -->
+    <%- include('../layout/user/footer') %>
+        <!-- include footer -->

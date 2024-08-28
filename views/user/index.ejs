@@ -1,8 +1,135 @@
-    
-    <!-- include header -->
-    <%- include('../layout/user/header') %>
 <!-- include header -->
-    
+<%- include('../layout/user/header') %>
+    <!-- include header -->
+    <style>
+        .dummy-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: not-allowed;
+            opacity: 0.65;
+            transition: background-color 0.3s;
+        }
+
+        .dummy-btn:hover {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .single-product-item figure {
+            position: relative;
+        }
+
+        .wishlist-icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-icon i {
+            font-size: 18px;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .wishlist-icon:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .wishlist-icon:hover i {
+            color: #f80939;
+        }
+
+        .wishlist-icon.active i {
+            color: #f80970;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .offer-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding-left: 10px;
+            color: #2ecc71;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .discount-badge {
+            background-color: #ff6b6b;
+            ;
+            color: white;
+            width: 35%;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            display: inline-block;
+            text-align: center;
+            margin: 0 auto 5px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .discount-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.5) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                top: -50%;
+                left: -50%;
+            }
+
+            100% {
+                top: 150%;
+                left: 150%;
+            }
+        }
+
+        .savings {
+            color: #010101;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .regular-price {
+            font-size: 1.1em;
+            color: #000000;
+            text-align: center;
+        }
+    </style>
     <!-- Hero Slider Begin -->
     <section class="hero-slider">
         <div class="hero-items owl-carousel">
@@ -44,7 +171,7 @@
     <!-- Hero Slider End -->
 
     <!-- Features Section Begin -->
-    <!-- <section class="features-section spad">
+    <section class="features-section spad">
         <div class="features-ads">
             <div class="container">
                 <div class="row">
@@ -74,7 +201,7 @@
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
         <!-- Features Box -->
         <!-- <div class="features-box">
             <div class="container">
@@ -118,182 +245,235 @@
             </div>
         </div>
     </section> -->
-    <!-- Features Section End -->
+        <!-- Features Section End -->
 
-    <!-- Latest Product Begin -->
-    <section class="latest-products spad">
-        <div class="container">
-            <div class="product-filter">
-                <div class="row">
-                    <div class="col-lg-12 text-center">
-                        <div class="section-title">
-                            <h2>Latest Products</h2>
+        <!-- Latest Product Begin -->
+        <section class="latest-products spad">
+            <div class="container">
+                <div class="product-filter">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <div class="section-title">
+                                <h2>New Arrivals</h2>
+                            </div>
                         </div>
-                        <!-- <ul class="product-controls">
-                            <li data-filter="*">All</li>
-                            <li data-filter=".dresses">Dresses</li>
-                            <li data-filter=".bags">Bags</li>
-                            <li data-filter=".shoes">Shoes</li>
-                            <li data-filter=".accesories">Accesories</li>
-                        </ul> -->
                     </div>
+                </div>
+                <div class="row" id="product-list">
+                    <% if (newArrivals && newArrivals.length> 0) { %>
+                        <% newArrivals.forEach((product)=> { %>
+                            <div class="col-lg-3 col-sm-6 mix all dresses bags">
+                                <div class="single-product-item">
+                                    <figure>
+                                        <a href="/productDetails/<%= product._id %>">
+                                            <img src="/images/products/<%= product.images && product.images[0] %>"
+                                                alt="">
+                                        </a>
+                                        <div class="wishlist-icon" data-product-id="<%= product._id %>">
+                                            <i class="far fa-heart"></i>
+                                        </div>
+                                    </figure>
+                                    <div
+                                        class="stock-status <%= product.stockQuantity >=1? 'in-stock' : 'out-of-stock' %>">
+                                        <%= product.stockQuantity>=1 ? 'In Stock' : 'Out of Stock' %>
+                                    </div>
+                                    <div class="product-text">
+                                        <h6>
+                                            <%= product.name %>
+                                        </h6>
+
+                                        <% if (product.productOffer || product.categoryOfferamount) { %>
+                                            <% let originalPrice=product.price; let offerPrice=product.productOffer ||
+                                                product.categoryOfferamount; let savings=originalPrice - offerPrice; let
+                                                discountPercentage=Math.round((savings / originalPrice) * 100); %>
+
+
+                                                <div class="price-container">
+                                                    <span class="offer-price">₹<%= offerPrice %></span>
+                                                    <span class="original-price">₹<%= originalPrice %></span>
+                                                    <span class="discount-badge">
+                                                        <%= discountPercentage %>% OFF
+                                                    </span>
+                                                </div>
+
+                                               
+                                                <div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹<%= savings %></span>
+                                                </div>
+                                                <% } else { %>
+                                                    <p class="regular-price">₹<%= product.price %>
+                                                    </p>
+                                                    <% } %>
+                                    </div>
+
+
+                                    <div class="product-actions">
+                                        <%if(product.stockQuantity>0){%>
+                                            <form action="/addCart" method="POST">
+                                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                                <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                                            </form>
+                                            <%}else{%>
+                                                <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                                                <%} %>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <p>No products found</p>
+                                    <% } %>
+                </div>
+                <div class="product-filter">
+                    <div class="row">
+                        <div class="col-lg-12 text-center">
+                            <div class="section-title">
+                                <h2>All Products</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="product-list">
+                    <% if (allProducts && allProducts.length> 0) { %>
+                        <% allProducts.forEach((product)=> { %>
+                            <div class="col-lg-3 col-sm-6 mix all dresses bags">
+                                <div class="single-product-item">
+                                    <figure>
+                                        <a href="/productDetails/<%= product._id %>">
+                                            <img src="/images/products/<%= product.images && product.images[0] %>"
+                                                alt="">
+                                        </a>
+                                        <div class="wishlist-icon" data-product-id="<%= product._id %>">
+                                            <i class="far fa-heart"></i>
+                                        </div>
+                                    </figure>
+                                    <div
+                                        class="stock-status <%= product.stockQuantity >=1? 'in-stock' : 'out-of-stock' %>">
+                                        <%= product.stockQuantity>=1 ? 'In Stock' : 'Out of Stock' %>
+                                    </div>
+                                    <div class="product-text">
+                                        <h6>
+                                            <%= product.name %>
+                                        </h6>
+
+                                        <% if (product.productOffer || product.categoryOfferamount) { %>
+                                            <% let originalPrice=product.price; let offerPrice=product.productOffer ||
+                                                product.categoryOfferamount; let savings=originalPrice - offerPrice; let
+                                                discountPercentage=Math.round((savings / originalPrice) * 100); %>
+
+                                                <div class="price-container">
+                                                    <span class="offer-price">₹<%= offerPrice %></span>
+                                                    <span class="original-price">₹<%= originalPrice %></span>
+                                                    <span class="discount-badge">
+                                                        <%= discountPercentage %>% OFF
+                                                    </span>
+                                                </div>
+
+                                                <div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹<%= savings %></span>
+                                                </div>
+                                                <% } else { %>
+                                                    <p class="regular-price">₹<%= product.price %>
+                                                    </p>
+                                                    <% } %>
+                                    </div>
+
+                                    <div class="product-actions">
+                                        <%if(product.stockQuantity>0){%>
+                                            <form action="/addCart" method="POST">
+                                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                                <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                                            </form>
+                                            <%}else{%>
+                                                <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                                                <%}%>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <p>No products found</p>
+                                    <% } %>
                 </div>
             </div>
-            <div class="row" id="product-list">
-                <div class="col-lg-3 col-sm-6 mix all dresses bags">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-1.jpg" alt=""></a>
-                            <div class="p-status">new</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Green Dress with details</h6>
-                            <p>$22.90</p>
-                        </div>
-                    </div>
+        </section>
+        <!-- Latest Product End -->
+        <!-- Logo Section Begin -->
+        <div class="logo-section spad">
+            <div class="logo-items owl-carousel">
+                <div class="logo-item">
+                    <img src="img/logos/logo-1.png" alt="">
                 </div>
-                <div class="col-lg-3 col-sm-6 mix all dresses bags">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-2.jpg" alt=""></a>
-                            <div class="p-status sale">sale</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Yellow Maxi Dress</h6>
-                            <p>$25.90</p>
-                        </div>
-                    </div>
+                <div class="logo-item">
+                    <img src="img/logos/logo-2.png" alt="">
                 </div>
-                <div class="col-lg-3 col-sm-6 mix all shoes accesories">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-3.jpg" alt=""></a>
-                            <div class="p-status">new</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>One piece bodysuit</h6>
-                            <p>$19.90</p>
-                        </div>
-                    </div>
+                <div class="logo-item">
+                    <img src="img/logos/logo-3.png" alt="">
                 </div>
-                <div class="col-lg-3 col-sm-6 mix all shoes accesories">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-4.jpg" alt=""></a>
-                            <div class="p-status popular">popular</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Blue Dress with details</h6>
-                            <p>$35.50</p>
-                        </div>
-                    </div>
+                <div class="logo-item">
+                    <img src="img/logos/logo-4.png" alt="">
                 </div>
-                <!-- <div class="col-lg-3 col-sm-6 mix all dresses shoes">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-5.jpg" alt=""></a>
-                            <div class="p-status">new</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Green Dress with details</h6>
-                            <p>$22.90</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-sm-6 mix all accesories bags">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-6.jpg" alt=""></a>
-                            <div class="p-status sale">sale</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Yellow Maxi Dress</h6>
-                            <p>$25.90</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-sm-6 mix all dresses bags">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-7.jpg" alt=""></a>
-                        </figure>
-                        <div class="product-text">
-                            <h6>One piece bodysuit</h6>
-                            <p>$19.90</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-sm-6 mix all accesories bags">
-                    <div class="single-product-item">
-                        <figure>
-                            <a href="#"><img src="img/products/img-8.jpg" alt=""></a>
-                            <div class="p-status popular">popular</div>
-                        </figure>
-                        <div class="product-text">
-                            <h6>Blue Dress with details</h6>
-                            <p>$35.50</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-    </section>
-    <!-- Latest Product End -->
-
-    <!-- Lookbok Section Begin -->
-    <section class="lookbok-section">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-4 offset-lg-1">
-                    <div class="lookbok-left">
-                        <div class="section-title">
-                            <h2>2019 <br />#lookbook</h2>
-                        </div>
-                        <p>Fusce urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vestibulum malesuada
-                            aliquet libero viverra cursus. Aliquam erat volutpat. Morbi id dictum quam, ut commodo
-                            lorem. In at nisi nec arcu porttitor aliquet vitae at dui. Sed sollicitudin nulla non leo
-                            viverra scelerisque. Phasellus facilisis lobortis metus, sit amet viverra lectus finibus ac.
-                            Aenean non felis dapibus, placerat libero auctor, ornare ante. Morbi quis ex eleifend,
-                            sodales nulla vitae, scelerisque ante. Nunc id vulputate dui. Suspendisse consectetur rutrum
-                            metus nec scelerisque. s</p>
-                        <a href="#" class="primary-btn look-btn">See More</a>
-                    </div>
-                </div>
-                <div class="col-lg-5 offset-lg-1">
-                    <div class="lookbok-pic">
-                        <img src="img/lookbok.jpg" alt="">
-                        <div class="pic-text">fashion</div>
-                    </div>
+                <div class="logo-item">
+                    <img src="img/logos/logo-5.png" alt="">
                 </div>
             </div>
         </div>
-    </section>
-    <!-- Lookbok Section End -->
+        <!-- Logo Section End -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const wishlistIcons = document.querySelectorAll('.wishlist-icon');
 
-    <!-- Logo Section Begin -->
-    <div class="logo-section spad">
-        <div class="logo-items owl-carousel">
-            <div class="logo-item">
-                <img src="img/logos/logo-1.png" alt="">
-            </div>
-            <div class="logo-item">
-                <img src="img/logos/logo-2.png" alt="">
-            </div>
-            <div class="logo-item">
-                <img src="img/logos/logo-3.png" alt="">
-            </div>
-            <div class="logo-item">
-                <img src="img/logos/logo-4.png" alt="">
-            </div>
-            <div class="logo-item">
-                <img src="img/logos/logo-5.png" alt="">
-            </div>
-        </div>
-    </div>
-    <!-- Logo Section End -->
 
-   
+                const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>'
+                wishlistIcons.forEach(icon => {
+                    const productId = icon.getAttribute('data-product-id');
+                    const heartIcon = icon.querySelector('i');
 
-       <!-- include header -->
-       <%- include('../layout/user/footer') %>
-       <!-- include header -->
+
+                    if (wishlistProducts.includes(productId)) {
+                        heartIcon.classList.remove('far');
+                        heartIcon.classList.add('fas');
+                        icon.classList.add('active');
+                    }
+
+                    icon.addEventListener('click', function () {
+                        const isActive = this.classList.contains('active');
+                        this.classList.toggle('active');
+                        if (isActive) {
+                            heartIcon.classList.remove('fas');
+                            heartIcon.classList.add('far');
+                        } else {
+                            heartIcon.classList.remove('far');
+                            heartIcon.classList.add('fas');
+                        }
+
+                        fetch('/addToWishlist', {
+                            method: 'post',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ productId })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    console.log('Successfully updated wishlist');
+                                } else {
+                                    console.log('Failed to update wishlist');
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error updating wishlist:', err);
+                            });
+                    });
+                });
+            });
+        </script>
+
+
+
+        <!-- include header -->
+        <%- include('../layout/user/footer') %>
+            <!-- include header -->

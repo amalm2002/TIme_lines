@@ -1,0 +1,28 @@
+<div class="user-profile-container">
+  <button class="sidebar-toggle-btn">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="user-profile-sidebar">
+    <div class="user-profile-summary">
+      <div class="user-profile-image-container">
+        <img src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="Profile Picture" class="user-profile-image">
+      </div>
+      <div class="user-profile-username-container">
+        <h2 class="user-profile-username"><%=user.name%></h2>
+        <p class="user-profile-email"><%=user.email%></p>
+      </div>
+    </div>
+    <nav class="user-profile-nav">
+      <ul class="user-profile-nav-list">
+        <li class="user-profile-nav-item"><a href="/userProfile" class="user-profile-nav-link"><i class="fas fa-user user-profile-nav-icon"></i>Profile</a></li>
+        <li class="user-profile-nav-item"><a href="/address" class="user-profile-nav-link"><i class="fas fa-map-marker-alt user-profile-nav-icon"></i>Address</a></li>
+        <li class="user-profile-nav-item"><a href="/wishlist" class="user-profile-nav-link"><i class="fas fa-heart user-profile-nav-icon"></i>Wishlist</a></li>
+        <li class="user-profile-nav-item"><a href="/shoppingCartPage" class="user-profile-nav-link"><i class="fas fa-shopping-cart user-profile-nav-icon"></i>Shoping Cart</a></li>
+        <li class="user-profile-nav-item"><a href="/orderListPage" class="user-profile-nav-link"><i class="fas fa-list-alt user-profile-nav-icon"></i>Order List</a></li>
+        <li class="user-profile-nav-item"><a href="/userCouponPage" class="user-profile-nav-link"><i class="fas fa-tags user-profile-nav-icon"></i>Coupons</a></li>
+        <li class="user-profile-nav-item"><a href="/walletPage" class="user-profile-nav-link"><i class="fas fa-wallet user-profile-nav-icon"></i>Wallet</a></li>
+        <li class="user-profile-nav-item"><a href="/changePassword" class="user-profile-nav-link"><i class="fas fa-lock user-profile-nav-icon"></i>Change Password</a></li>
+      </ul>
+    </nav>
+  </div>
+    

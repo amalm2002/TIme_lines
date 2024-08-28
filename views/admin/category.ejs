@@ -1,6 +1,6 @@
 <!-- include header -->
 <%- include('../layout/admin/header') %>
-<!-- include header -->
+    <!-- include header -->
 
     <body>
         <style>
@@ -58,8 +58,10 @@
                                 <td class="action-buttons">
                                     <button class="btn btn-edit"
                                         onclick="startEditCategory('<%= cat._id %>', '<%= cat.name %>', '<%= cat.description %>')">Edit</button>
-                                    <button class="btn btn-delete"
-                                        onclick="deleteCategory('<%= cat._id %>')">Delete</button>
+                                    <button class="btn status-button <%= cat.isBlocked ? 'btn-unblock' : 'btn-block' %>"
+                                        onclick="changeStatus('<%= cat._id %>', '<%= cat.isBlocked %>')">
+                                        <%= cat.isBlocked ? 'Unblock' : 'Block' %>
+                                    </button>
                                 </td>
                             </tr>
                             <% }); %>
@@ -153,8 +155,7 @@
                     });
                 </script>
                 <script>
-
-                    //update categories
+                    // Update categories
                     document.getElementById('editCategoryForm').addEventListener('submit', async (event) => {
                         event.preventDefault();
 
@@ -172,20 +173,40 @@
                             });
 
                             if (response.ok) {
-                                const row = document.getElementById(`category-${id}`);
-                                if (row) {
-                                    row.querySelector('td:nth-child(2)').textContent = name;
-                                    row.querySelector('td:nth-child(3)').textContent = description;
+                                const data = await response.json();
+                                if (data.message === 'Updated successfully') {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: 'Category updated successfully.',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        const row = document.getElementById(`category-${id}`);
+                                        if (row) {
+                                            row.querySelector('td:nth-child(2)').textContent = name;
+                                            row.querySelector('td:nth-child(3)').textContent = description;
+                                        }
+                                        window.location.reload();
+                                        cancelEdit();
+                                    });
                                 }
-                                window.location.reload();
-
-                                cancelEdit();
                             } else {
                                 const data = await response.json();
-                                console.error('Error updating category:', data);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: data.error || 'An error occurred while updating the category.',
+                                    confirmButtonText: 'OK'
+                                });
                             }
                         } catch (error) {
                             console.error('Error submitting form:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'An unexpected error occurred.',
+                                confirmButtonText: 'OK'
+                            });
                         }
                     });
 
@@ -200,12 +221,9 @@
                         document.getElementById('editCategoryForm').reset();
                         document.getElementById('editCategorySection').style.display = 'none';
                     }
-
                 </script>
 
-                <script>
-
-
+                <!-- <script>
                     //delete categories
                     async function deleteCategory(id) {
                         Swal.fire({
@@ -251,8 +269,60 @@
                         });
                     }
 
-                </script>
+                </script> -->
+                <script>
+                    async function changeStatus(id, isBlocked) {
 
+                        const currentStatus = isBlocked === 'true';
+                        const newStatus = !currentStatus;
+                        const action = newStatus ? 'block' : 'unblock';
+                        const confirmText = `Are you sure you want to ${action} this category?`;
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: confirmText,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: `Yes, ${action} it!`,
+                            cancelButtonText: 'No, cancel!',
+                            reverseButtons: true
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                try {
+                                    const response = await fetch(`/admin/category/${id}/status`, {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ isBlocked: newStatus })
+                                    });
+
+                                    if (response.ok) {
+                                        const statusButton = document.querySelector(`#category-${id} .status-button`);
+                                        if (statusButton) {
+                                            statusButton.textContent = newStatus ? 'Unblock' : 'Block';
+                                            statusButton.classList.toggle('btn-block', !newStatus);
+                                            statusButton.classList.toggle('btn-unblock', newStatus);
+                                            statusButton.setAttribute('onclick', `changeStatus('${id}', '${newStatus}')`);
+                                        }
+
+                                        Swal.fire('Updated!', `Category has been ${action}ed.`, 'success');
+                                    } else {
+                                        const data = await response.json();
+                                        console.error(`Error changing status:`, data);
+                                        Swal.fire('Error', `Failed to ${action} category`, 'error');
+                                    }
+                                } catch (error) {
+                                    console.error('Error changing status:', error);
+                                    Swal.fire('Error', `Failed to ${action} category`, 'error');
+                                }
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                Swal.fire('Cancelled', `Category ${action} was cancelled`, 'info');
+                            }
+                        });
+                    }
+
+                </script>
         </body>
 
         </html>

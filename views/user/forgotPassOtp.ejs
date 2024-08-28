@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <link rel="stylesheet" href="/css/otp.css">
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
+    <style>
+        #timer {
+            color: rgb(247, 4, 4);
+        }
+
+        #otp-Mail {
+            color: rgb(247, 4, 4);
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .resend {
+            display: none;
+
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4"
+                style="width: 50%; margin-top: 70px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); text-align: center;">
+                <div class="card bg-white mb-5 mt-5 border-0">
+                    <div class="card-body p-5 text-center">
+                        <h4>Verify</h4>
+                        <form id="otpForm" action="/verifyForgotPasswordOtp" method="post">
+                            <div class="otp-field mb-4">
+                                <input type="number" name="otp" maxlength="1" />
+                                <input type="number" name="otp" maxlength="1" disabled />
+                                <input type="number" name="otp" maxlength="1" disabled />
+                                <input type="number" name="otp" maxlength="1" disabled />
+                                <input type="number" name="otp" maxlength="1" disabled />
+                                <input type="number" name="otp" maxlength="1" disabled />
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-3" disabled>
+                                Verify
+                            </button>
+                            <p class="text-muted mb-0">
+                                Didn't receive code?<br>
+                                <button type="button" class="resend btn btn-primary mb-3" id="resendOtp">Request
+                                    again</button>
+                            <p>Otp expires on <span id="timer">00:30</span></p>
+                            </p>
+                            <div id="error-message" class="error-message"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const inputs = document.querySelectorAll(".otp-field > input");
+        const button = document.querySelector(".btn");
+
+        window.addEventListener("load", () => inputs[0].focus());
+        button.setAttribute("disabled", "disabled");
+
+        inputs[0].addEventListener("paste", function (event) {
+            event.preventDefault();
+
+            const pastedValue = (event.clipboardData || window.clipboardData).getData("text");
+            const otpLength = inputs.length;
+
+            for (let i = 0; i < otpLength; i++) {
+                if (i < pastedValue.length) {
+                    inputs[i].value = pastedValue[i];
+                    inputs[i].removeAttribute("disabled");
+                    inputs[i].focus();
+                } else {
+                    inputs[i].value = "";
+                    inputs[i].focus();
+                }
+            }
+        });
+
+        inputs.forEach((input, index1) => {
+            input.addEventListener("keyup", (e) => {
+                const currentInput = input;
+                const nextInput = input.nextElementSibling;
+                const prevInput = input.previousElementSibling;
+
+                if (currentInput.value.length > 1) {
+                    currentInput.value = "";
+                    return;
+                }
+
+                if (nextInput && nextInput.hasAttribute("disabled") && currentInput.value !== "") {
+                    nextInput.removeAttribute("disabled");
+                    nextInput.focus();
+                }
+
+                if (e.key === "Backspace") {
+                    inputs.forEach((input, index2) => {
+                        if (index1 <= index2 && prevInput) {
+                            input.setAttribute("disabled", true);
+                            input.value = "";
+                            prevInput.focus();
+                        }
+                    });
+                }
+
+                button.classList.remove("active");
+                button.setAttribute("disabled", "disabled");
+
+                const inputsNo = inputs.length;
+                if (!inputs[inputsNo - 1].disabled && inputs[inputsNo - 1].value !== "") {
+                    button.classList.add("active");
+                    button.removeAttribute("disabled");
+                }
+            });
+        });
+
+        let timerElement = document.getElementById('timer');
+        let resendOtpElement = document.getElementById('resendOtp');
+        let timerDuration = 30;
+        let countdown;
+
+        function startTimer() {
+            countdown = setInterval(() => {
+                if (timerDuration <= 0) {
+                    clearInterval(countdown);
+                    timerElement.textContent = '00:00';
+                    resendOtpElement.style.display = 'inline';
+                } else {
+                    timerDuration--;
+                    const minutes = String(Math.floor(timerDuration / 60)).padStart(2, '0');
+                    const seconds = String(timerDuration % 60).padStart(2, '0');
+                    timerElement.textContent = `${minutes}:${seconds}`;
+                }
+            }, 1000);
+        }
+
+        resendOtpElement.addEventListener('click', async (event) => {
+            event.preventDefault();
+            timerDuration = 30;
+            timerElement.textContent = '00:30';
+            resendOtpElement.style.display = 'none';
+
+            let email = document.getElementById("myEmail") ? document.getElementById("myEmail").value : '';
+
+            await fetch('/resendForgotPasswordOtp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            }).then(response => {
+                if (response?.ok) {
+                    clearInterval(countdown);
+                    startTimer();
+                }
+            });
+        });
+
+        document.getElementById('otpForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const otp = Array.from(formData.getAll('otp'));
+
+            try {
+                const response = await fetch('/verifyForgotPasswordOtp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ otp })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // alert('OTP verified, please set your new password');
+                    window.location.href = '/newForgotPassPage';
+                } else {
+                    document.getElementById('error-message').textContent = data.error || 'Failed to verify OTP';
+                }
+            } catch (error) {
+                document.getElementById('error-message').textContent = 'An unexpected error occurred!';
+                console.error('Error:', error);
+            }
+        });
+
+
+
+
+        window.onload = function () {
+            startTimer();
+        };
+    </script>
+</body>
+
+
+</html>

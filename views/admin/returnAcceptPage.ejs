@@ -1,0 +1,219 @@
+<%- include('../layout/admin/header') %>
+
+
+<style>
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 0 20px;
+    }
+
+    .returned-orders-container {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+
+    .order-card {
+        display: flex;
+        flex-direction: row;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-image {
+        flex: 0 0 150px;
+        margin-right: 20px;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 150px;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+
+    .order-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-info {
+        margin-bottom: 10px;
+    }
+
+    .user-info h2 {
+        margin-bottom: 5px;
+        font-size: 1.2em;
+    }
+
+    .address {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .product-info {
+        margin-bottom: 15px;
+    }
+
+    .product-info h3 {
+        margin-bottom: 5px;
+        font-size: 1.1em;
+    }
+
+    .product-info p {
+        margin: 2px 0;
+    }
+
+
+    .return-reason {
+        margin-bottom: 15px;
+    }
+
+    .return-reason label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .return-reason textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: vertical;
+        min-height: 80px;
+    }
+
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .action-buttons button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s;
+        font-weight: bold;
+    }
+
+    .accept {
+        background-color: #4CAF50;
+    }
+
+    .reject {
+        background-color: #f44336;
+    }
+
+    .action-buttons button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+
+    .action-buttons button:active {
+        transform: translateY(0);
+    }
+
+
+    @media (max-width: 768px) {
+        .order-card {
+            flex-direction: column;
+        }
+
+        .product-image {
+            flex: 0 0 auto;
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+
+        .product-image img {
+            height: auto;
+        }
+
+        .action-buttons {
+            justify-content: space-between;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+    }
+</style>
+
+<body>
+    <header>
+        <h1>Returned Order Details</h1>
+    </header>
+
+    <main class="returned-orders-container">
+        <% if (order && order.status === 'Returned') { %>
+            <div class="order-summary">
+                <h1>Order Details</h1>
+                <div class="user-info">
+                    <h2>User: <%= order.userName %></h2>
+                    <p class="address">
+                        Address: <%= order.billingAddress[0].street %>, <%= order.billingAddress[0].city %>, <%= order.billingAddress[0].country %>
+                    </p>
+                </div>
+                <div class="order-info">
+                    <p class="total-quantity">Total Quantity: <%= order.productItems.reduce((total, item) => total + item.quantity, 0) %></p>
+                    <p class="total-amount">Total Amount: ₹<%= order.totalPrice %></p>
+                    <p class="paymentMethod">Payment Method: <%= order.paymentMethod %></p>
+                    <p class="date-ordered">Date Ordered: <%= new Date(order.dateOrdered).toLocaleDateString() %></p>
+                </div>
+            </div>
+    
+            <div class="returned-products">
+                <h2>Returned Products</h2>
+                <% order.productItems.forEach(item => { %>
+                    <% if(item.status!=='Cancelled'){%>
+                        <div class="order-card">
+                            <div class="product-image">
+                                <% if (item.productId && item.productId.images[0] ) { %>
+                                    <img src="/images/products/<%= item.productId.images[0] %>" alt="<%= item.productName %>">
+                                    <% } else { %>
+                                        <p>No image available</p>
+                                        <% } %>
+                                    </div>
+                            <div class="order-details">
+                                <div class="product-info">
+                                    <h3><%= item.productName %></h3>
+                                    <p class="price">₹<%= item.total %></p>
+                                    <p class="quantity">Quantity: <%= item.quantity %></p>
+                                </div>
+                                <div class="return-reason">
+                                    <label for="reason">Return Reason:
+                                        <p style="font-weight: 300;"><%= item.returnReason %></p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <%}%>
+                        <% }) %>
+            </div>
+        <% } else { %>
+            <p>No returned orders found.</p>
+        <% } %>
+        <a href="/admin/orderPage">Back</a>
+    </main>
+    
+    
+
+</body>
+
+</html>

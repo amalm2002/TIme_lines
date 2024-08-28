@@ -11,7 +11,6 @@ const generateOTP = () => {
 const sendOtpMail = async (email, otp) => {
 
     console.log('this is the email from .env',process.env.AUTH_EMAIL)
-    // Ensure environment variables are set
     if (!process.env.AUTH_EMAIL || !process.env.AUTH_PASS) {
         throw new Error('Email authentication environment variables not set');
     }
@@ -36,7 +35,6 @@ const sendOtpMail = async (email, otp) => {
         console.log('Email sent successfully');
     } catch (error) {
         console.error('Error sending email:', error);
-        // Check for specific error codes and handle them
         if (error.responseCode === 511) {
             throw new Error('Invalid recipient address');
         }
@@ -47,12 +45,11 @@ const sendOtpMail = async (email, otp) => {
 // Function to handle OTP generation and sending
 const sendOtp = async (email) => {
     try {
-        // Find the user by email
-        const user = await User.findOne({ email});
+        const user = await User.findOne({email});
+        console.log('user email :',email);
         if (user) {
-            console.log('user exist')
-
-            throw new Error('User not found');
+            console.log('user  exist')
+            // throw new Error('User not found');
         }else{
 
         
@@ -60,8 +57,6 @@ const sendOtp = async (email) => {
         const otp = generateOTP();
         console.log("this is generated otp :  ",otp);
         await Otp.deleteMany({ email });
-        
-        // Create and save new OTP
         const newOtp = new Otp({
             email,
             otp
@@ -78,6 +73,31 @@ const sendOtp = async (email) => {
     }
 };
 
+const forgotOtp=async(email)=>{
+    try {const user = await User.findOne({email});
+    console.log('user forgot email :',email);
+    if (user) {
+    const otp = generateOTP();
+    console.log("this is generated otpfor forgot Password :  ",otp);
+    await Otp.deleteMany({ email });
+    const newOtp = new Otp({
+        email,
+        otp
+    });
+
+    await newOtp.save();
+    await sendOtpMail(email, otp);
+    console.log('otp send successfully')
+    return { success: true, message: 'OTP has been sent to your email' };
+}
+        
+    } catch (error) {
+        console.error('Error generating or sending OTP:', error.message);
+        throw new Error('Error generating or sending OTP'); 
+    }
+}
+
 module.exports = {
-    sendOtp
+    sendOtp,
+    forgotOtp
 };

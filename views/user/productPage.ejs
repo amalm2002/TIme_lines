@@ -1,0 +1,406 @@
+<!-- include header -->
+<%- include('../layout/user/header') %>
+<!-- include header -->
+<style>
+    .dummy-btn {
+    background-color: #6c757d; 
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: not-allowed; 
+    opacity: 0.65; 
+    transition: background-color 0.3s;
+}
+
+.dummy-btn:hover {
+    background-color: #6c757d; 
+    cursor: not-allowed;
+}
+.wishlist-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.wishlist-icon i {
+    font-size: 18px;
+    color: #888;
+    transition: all 0.3s ease;
+}
+
+.wishlist-icon:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.wishlist-icon:hover i {
+    color: #fe439f;
+}
+
+.wishlist-icon.active i {
+    color: #fe439f;
+}
+
+
+.price-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .offer-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .discount-badge {
+            background-color: #ff6b6b;
+            ;
+            color: white;
+            width: 35%;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            display: inline-block;
+            text-align: center;
+            margin: 0 auto 5px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .discount-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.5) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                top: -50%;
+                left: -50%;
+            }
+
+            100% {
+                top: 150%;
+                left: 150%;
+            }
+        }
+
+        .savings {
+            color: #010101;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .regular-price {
+            font-size: 1.1em;
+            color: #000000;
+            text-align: center;
+        }
+</style>
+<!-- Page Add Section Begin -->
+<section class="products-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="search-bar">
+                    <form id="search-form" action="/productPage" method="get">
+                        <input type="text" name="search" placeholder="Search watches...">
+                        <button type="submit">  <img src="/userHome/img/icons/search.png" alt=""></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-3">
+                <form id="categories-form" class="cat-form">
+                    <div id="categories">
+                        <h3>Filter by</h3>
+                        <div class="filter-group">
+                            <h4>Category</h4>
+                            <% category.forEach(cat => { %>
+                                <div>
+                                    <input type="checkbox" id="category-<%= cat._id %>" name="categories" value="<%= cat._id %>">
+                                    <label for="category-<%= cat._id %>">
+                                        <%= cat.name %>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Brand</h4>
+                            <% brand.forEach(brand => { %>
+                                <div>
+                                    <input type="checkbox" id="brand-<%= brand._id %>" name="brands" value="<%= brand._id %>">
+                                    <label for="brand-<%= brand._id %>">
+                                        <%= brand.name %>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Price Range</h4>
+                            <ul>
+                                <!-- <li><input type="checkbox" id="price1" name="price-range" value="200-999"><label for="price1">₹100 - ₹999</label></li> -->
+                                <li><input type="checkbox" id="price2" name="price-range" value="1000-4999"><label for="price2">₹1000 - ₹4999</label></li>
+                                <li><input type="checkbox" id="price3" name="price-range" value="5000-9999"><label for="price3">₹5000 - ₹9999</label></li>
+                                <li><input type="checkbox" id="price4" name="price-range" value="10000-50000"><label for="price4">₹10000 - ₹50000</label></li>
+                            </ul>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Sort by</h4>
+                            <select id="sort-options" name="sort">
+                                <option value="price-asc">Price: Low to High</option>
+                                <option value="price-desc">Price: High to Low</option>
+                                <option value="name-asc">Name: Aa to Zz</option>
+                                <option value="name-desc">Name: Zz to Aa</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <h4>Price Slider</h4>
+                            <input type="range" id="price-slider" min="0" max="50000" step="100" value="50000">
+                            <div class="price-range-labels">
+                                <span id="min-price">₹0</span>
+                                <span id="max-price">₹50000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit">Apply filtter</button>
+                </form>
+            </div>
+            <div class="col-lg-9">
+                <div class="products-grid" id="products-grid">
+                    <% products.forEach((product, index) => { %>
+                        <div class="product-card">
+                            <div class="stock-status <%= product.stockQuantity > 0 ? 'in-stock' : 'out-of-stock' %>">
+                                <%= product.stockQuantity > 0 ? 'In Stock' : 'Out of Stock' %>
+                            </div>
+                            <a href="/productDetails/<%= product._id %>">
+                                <div class="product-image">
+                                    <img src="/images/products/<%= product.images && product.images[0] %>" alt="<%= product.name %>">
+                                    <div class="wishlist-icon" data-product-id="<%= product._id %>" >
+                                        <i class="far fa-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="product-info">
+                                    <h3>
+                                        <%= product.name %>
+                                    </h3>
+                                    <% if (product.productOffer || product.categoryOfferamount) { %>
+                                        <% let originalPrice=product.price; let offerPrice=product.productOffer ||
+                                            product.categoryOfferamount; let savings=originalPrice - offerPrice; let
+                                            discountPercentage=Math.round((savings / originalPrice) * 100); %>
+
+
+                                            <div class="price-container">
+                                                <span class="offer-price">₹<%= offerPrice %></span>
+                                                <span class="original-price">₹<%= originalPrice %></span>
+                                                <span class="discount-badge">
+                                                    <%= discountPercentage %>% OFF
+                                                </span>
+                                            </div>
+
+                                           
+                                            <div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹<%= savings %></span>
+                                            </div>
+                                            <% } else { %>
+                                                <p class="regular-price">₹<%= product.price %>
+                                                </p>
+                                                <% } %>
+                                    <% if (product.stockQuantity > 0) { %>
+                                        <form action="/addCart" method="post">
+                                            <div>
+                                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                                <button class="add-to-cart-btn">Add to Cart</button>
+                                            </div>
+                                        </form>
+                                    <% } else { %>
+                                        <button type="button" class="dummy-btn" disabled>Out of Stock</button>
+                                    <% } %>
+                                </div>
+                            </a>
+                        </div>
+                        
+                    <% }) %>
+                </div>
+                <!-- <div class="load-more">
+                    <button class="load-more-btn">Load More</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wishlistIcons = document.querySelectorAll('.wishlist-icon');
+        
+      
+        const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>'    
+        wishlistIcons.forEach(icon => {
+            const productId = icon.getAttribute('data-product-id');
+            const heartIcon = icon.querySelector('i');
+            
+        
+            if (wishlistProducts.includes(productId)) {
+                heartIcon.classList.remove('far');
+                heartIcon.classList.add('fas');
+                icon.classList.add('active');
+            }
+
+            icon.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                this.classList.toggle('active');
+                if (isActive) {
+                    heartIcon.classList.remove('fas');
+                    heartIcon.classList.add('far');
+                } else {
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                }
+
+                fetch('/addToWishlist', {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Successfully updated wishlist');
+                    } else {
+                        console.log('Failed to update wishlist');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error updating wishlist:', err);
+                });
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const priceSlider=document.getElementById('price-slider')
+        const minPriceRange=document.getElementById('min-price')
+        const maxPriceRange=document.getElementById('max-price')
+
+        priceSlider.addEventListener('input',()=>{
+            const sliderValue=priceSlider.value
+            minPriceRange.textContent='0'
+            maxPriceRange.textContent=`₹${sliderValue}`
+        })
+
+        const filterForm = document.getElementById('categories-form');
+        filterForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(filterForm);
+            const selectedCategory = formData.getAll('categories');
+            const selectedBrands = formData.getAll('brands');
+            const selectedPriceRanges = formData.getAll('price-range');
+            const sortOption = document.getElementById('sort-options').value;
+            const priceSliderValue = document.getElementById('price-slider').value;
+
+            const filters = {
+                categories: selectedCategory,
+                brands: selectedBrands,
+                priceRanges: selectedPriceRanges,
+                sort: sortOption,
+                maxPrice: priceSliderValue
+            };
+
+            try {
+                const response = await fetch('/productPage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(filters)
+                });
+
+                const data = await response.json();
+                const productsGrid = document.getElementById('products-grid');
+                productsGrid.innerHTML = "";
+
+                data.products.forEach(product => {
+    const originalPrice = product.price;
+    const offerPrice = product.productOffer || product.categoryOfferamount || null;
+    const savings = offerPrice ? originalPrice - offerPrice : 0;
+    const discountPercentage = offerPrice ? Math.round((savings / originalPrice) * 100) : 0;
+
+    const productCard = `
+        <div class="product-card">
+            <a href="/productDetails/${product._id}">
+                <div class="product-image">
+                    <img src="/images/products/${product.images && product.images[0]}" alt="${product.name}">
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <div class="price-container">
+                        ${offerPrice ? 
+                            `<span class="offer-price">₹${offerPrice}</span>
+                             <span class="original-price">₹${originalPrice}</span>
+                             <span class="discount-badge">${discountPercentage}% OFF</span>`
+                         : 
+                            `<span class="price">₹${originalPrice}</span>`
+                        }
+                    </div>
+                    ${savings ? 
+                        `<div class="savings">You save: <span style="color: rgb(255, 94, 0); font-weight: 800;">₹${savings}</span></div>` 
+                    : ''}
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                </div>
+            </a>
+        </div>
+    `;
+    productsGrid.insertAdjacentHTML('beforeend', productCard);
+});
+
+
+            } catch (error) {
+                console.error('Error occurred in filter products:', error);
+            }
+        });
+
+        const searchForm = document.getElementById('search-form');
+        searchForm.addEventListener('submit', (event) => {
+            searchForm.submit();
+        });
+    });
+</script>
+
+<!-- include footer -->
+<%- include('../layout/user/footer') %>
+<!-- include footer -->

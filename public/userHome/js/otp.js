@@ -18,7 +18,7 @@ inputs[0].addEventListener("paste", function (event) {
       inputs[i].removeAttribute("disabled");
       inputs[i].focus;
     } else {
-      inputs[i].value = ""; // Clear any remaining inputs
+      inputs[i].value = ""; 
       inputs[i].focus;
     }
   }

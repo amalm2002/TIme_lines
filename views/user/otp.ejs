@@ -1,199 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
-    <link rel="stylesheet" href="/css/otp.css">
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>
-    <style>
-        #timer {
-            color: rgb(247, 4, 4);
-        }
-
-        #otp-Mail {
-            color: rgb(247, 4, 4);
-        }
-        .error-message{
-            color: red;
-            margin-top: 10px;
-        }
-        .resend{
-            display: none;
-        }
-    </style>
-</head>
-
-<body>
-    <main class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-6 col-lg-4" style="width: 50%; margin-top: 70px; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            text-align: center;">
-                <div class="card bg-white mb-5 mt-5 border-0">
-                    <div class="card-body p-5 text-center">
-                        <h4>Verify</h4>
-                        <p>Your code was sent to <span id="otp-Mail">
-                                <%= email %>
-                            </span> </p>
-                        <form id="otpForm" action="/verifyOtp" method="post">
-                            <input type="hidden" name="email" id="myEmail" value="<%= email %>">
-                            <div class="otp-field mb-4">
-                                <input type="number" name="otp" maxlength="1" />
-                                <input type="number" name="otp" maxlength="1" disabled />
-                                <input type="number" name="otp" maxlength="1" disabled />
-                                <input type="number" name="otp" maxlength="1" disabled />
-                                <input type="number" name="otp" maxlength="1" disabled />
-                                <input type="number" name="otp" maxlength="1" disabled />
-                            </div>
-                            <button type="submit" class="btn btn-primary mb-3">
-                                Verify
-                            </button>
-                            <p class="resend text-muted mb-0"> -->
-                                <!-- Didn't receive code? <a href="#" id="resendOtp">Request again</a> -->
-                                <!-- Didn't receive code?<button type="submit" class="resend btn btn-primary mb-3" id="resendOtp">Request again</button>
-
-                               <p>Otp expaire on <span id="timer">00:30</span></p>
-                            </p>
-                            <div id="error-message" class="error-message"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main> -->
-    <!-- <script>
-        let timerElement = document.getElementById('timer');
-        let resendOtpElement = document.getElementById('resendOtp');
-        let email = document.getElementById("myEmail").value;
-        // console.log(email, "this is email============================================>");
-        let errorMessage=document.getElementById('error-message')
-        let timerDuration = 30;
-        // let countdown;
-        
-        const countdown=setInterval(()=>{
-            if (timerDuration<=0) {
-                clearInterval(countdown)
-                timerElement.textContent='00:00'
-                resendOtpElement.classList.remove('resend')
-            }else{
-                timerDuration--
-                const minutes=String(Math.floor(timerDuration/60)).padStart(2,'0')
-                const seconds=String(timerDuration%60).padStart(2,'0')
-                timerElement.textContent=`${minutes}:${seconds}`
-            }
-        },1000)
-
-        resendOtpElement.addEventListener('click',async(event)=>{
-            event.preventDefault()
-            timerDuration=30
-            timerElement.textContent='00:30'
-            
-            await fetch('/resendOtp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email: email })
-            }).then(response => response.json()).then(data => {
-                if (data.success) {
-                    alert('New OTP sent to your email');
-                    resetTimer();
-                }
-            }).catch(error => console.error('Error:', error));
-            
-            countdown
-        })
-        // function startTimer(duration) {
-        //     let timeRemaining = duration;
-        //     countdown = setInterval(() => {
-        //         let minutes = Math.floor(timeRemaining / 60);
-        //         let seconds = timeRemaining % 60;
-
-        //         minutes = minutes < 10 ? '0' + minutes : minutes;
-        //         seconds = seconds < 10 ? '0' + seconds : seconds;
-
-        //         timerElement.textContent = `${minutes}:${seconds}`;
-        //         if (timeRemaining <= 0) {
-        //             clearInterval(countdown);
-        //             timerElement.textContent = '00:00';
-        //         } else {
-        //             timeRemaining--;
-        //         }
-        //     }, 1000);
-        // }
-
-        // function resetTimer() {
-        //     clearInterval(countdown);
-        //     startTimer(timerDuration);
-        // }
-
-        // resendOtpElement.addEventListener('click', async (event) => {
-        //     event.preventDefault();
-        //     await fetch('/resendOtp', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify({ email: email })
-        //     }).then(response => response.json()).then(data => {
-        //         if (data.success) {
-        //             alert('New OTP sent to your email');
-        //             resetTimer();
-        //         }
-        //     }).catch(error => console.error('Error:', error));
-        // });
-
-        const inputs = document.querySelectorAll('input[type="number"]');
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', () => {
-                if (input.value.length === 1) {
-                    if (index < inputs.length - 1) {
-                        inputs[index + 1].removeAttribute('disabled');
-                        inputs[index + 1].focus();
-                    }
-                }
-            });
-
-            input.addEventListener('keydown', (event) => {
-                if (event.key === 'Backspace' && input.value.length === 0 && index > 0) {
-                    inputs[index - 1].focus();
-                }
-            });
-        });
-
-        document.getElementById('otpForm').addEventListener('submit',async (event)=>{
-            event.preventDefault()
-            const formData= new FormData(event.target)
-            const otp= Array.from(formData.getAll('otp'))
-
-            await fetch('/verifyOtp',{
-                method:'post',
-                headers:{
-                    'Content-Type':'application/json'
-                },
-                body :JSON.stringify({otp:otp})
-            }).then(response=>response.json()).then(data=>{
-                if (data.error) {
-                    errorMessage.textContent=data.error
-                }else{
-                    window.location.href='/'
-                }
-            }).catch(error=>{
-                errorMessage.textContent='An unexpexted error will occuire!'
-                console.error('error:',error)
-            })
-        })
-
-        window.onload = function () {
-            startTimer(timerDuration);
-        };
-    </script> -->
-<!-- </body>
-
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -219,6 +23,7 @@
 
         .resend {
             display: none;
+
         }
     </style>
 </head>
@@ -246,8 +51,9 @@
                             <button type="submit" class="btn btn-primary mb-3">
                                 Verify
                             </button>
-                            <p class="resend text-muted mb-0">
-                                Didn't receive code?<button type="button" class="resend btn btn-primary mb-3" id="resendOtp">Request again</button>
+                            <p class="text-muted mb-0">
+                                Didn't receive code?<br>
+                                <button type="button" class="resend btn btn-primary mb-3" id="resendOtp">Request again</button>
                                 <p>Otp expires on <span id="timer">00:30</span></p>
                             </p>
                             <div id="error-message" class="error-message"></div>
@@ -263,14 +69,14 @@
         let email = document.getElementById("myEmail").value;
         let errorMessage = document.getElementById('error-message');
         let timerDuration = 30;
-        let countdown; // Declare countdown in the global scope
+        let countdown;
 
         function startTimer() {
             countdown = setInterval(() => {
                 if (timerDuration <= 0) {
                     clearInterval(countdown);
                     timerElement.textContent = '00:00';
-                    resendOtpElement.classList.remove('resend'); // Show the button
+                    resendOtpElement.style.display = 'inline';
                 } else {
                     timerDuration--;
                     const minutes = String(Math.floor(timerDuration / 60)).padStart(2, '0');
@@ -284,7 +90,7 @@
             event.preventDefault();
             timerDuration = 30;
             timerElement.textContent = '00:30';
-            resendOtpElement.classList.add('resend'); // Hide the button again
+            resendOtpElement.style.display = 'none';
 
             await fetch('/resendOtp', {
                 method: 'POST',
@@ -292,13 +98,12 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ email: email })
-            }).then(response => response.json()).then(data => {
-                if (data.success) {
-                    alert('New OTP sent to your email');
-                    clearInterval(countdown); // Clear the existing timer
-                    startTimer(); // Restart the timer
+            }).then(response =>{
+                if(response?.ok) {
+                    clearInterval(countdown);
+                    startTimer();
                 }
-            }).catch(error => console.error('Error:', error));
+            })
         });
 
         const inputs = document.querySelectorAll('input[type="number"]');
@@ -343,7 +148,7 @@
         });
 
         window.onload = function () {
-            startTimer(); // Start the timer on page load
+            startTimer();
         };
     </script>
 </body>

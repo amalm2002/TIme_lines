@@ -1,0 +1,334 @@
+<%- include('../layout/user/header') %>
+<%- include('../layout/userProfile/sidebar') %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.order-container {
+    width: 95%;
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background-color: #3498db;
+    border-radius: 2px;
+}
+
+.no-orders-message {
+    text-align: center;
+    font-size: 18px;
+    color: #7f8c8d;
+    margin-top: 30px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.order-item {
+    display: flex;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    align-items: center;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.order-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.product-details {
+    flex: 1;
+    padding-right: 15px;
+}
+
+.order-id {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+    display: inline-block;
+    background-color: #f7f9fa;
+    padding: 3px 8px;
+    border-radius: 15px;
+    font-weight: 500;
+}
+
+.status {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
+
+.status-paid {
+    background-color: #e8f5e9;
+    color: #2ecc71;
+}
+
+.status-failed {
+    background-color: #ffebee;
+    color: #e74c3c;
+}
+
+.order-summary {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.price-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #bdc3c7;
+}
+
+.price-item {
+    flex-basis: 100%;
+    margin-bottom: 5px;
+}
+
+.price-label {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 3px;
+}
+
+.price-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.original-price {
+    color: #95a5a6;
+    text-decoration: line-through;
+}
+
+.discount-amount {
+    color: #e74c3c;
+}
+
+.total-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #27ae60;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #ecf0f1;
+}
+
+.savings-badge {
+    background-color: #ffeaa7;
+    color: #d35400;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.price-view {
+    min-width: 150px;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.view-btn {
+    background-color: #3498db;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    box-shadow: 0 3px 5px rgba(52, 152, 219, 0.2);
+}
+
+.view-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3);
+}
+
+.view-btn-failed {
+    background-color: #e74c3c;
+    box-shadow: 0 3px 5px rgba(231, 76, 60, 0.2);
+}
+
+.view-btn-failed:hover {
+    background-color: #c0392b;
+    box-shadow: 0 4px 6px rgba(231, 76, 60, 0.3);
+}
+
+.coupon {
+    font-size: 11px;
+    color: #e67e22;
+    margin-top: 5px;
+    font-weight: 600;
+    background-color: #fff3e0;
+    padding: 3px 8px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.total-items {
+    font-size: 12px;
+    color: #34495e;
+    margin-top: 5px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .order-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+    }
+
+    .product-details {
+        padding-right: 0;
+        margin-bottom: 15px;
+        width: 100%;
+    }
+
+    .price-view {
+        width: 100%;
+        align-items: flex-start;
+    }
+
+    .view-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .price-breakdown {
+        flex-direction: column;
+    }
+
+    .price-item {
+        flex-basis: 100%;
+    }
+}
+</style>
+</head>
+<body>
+<div class="order-container">
+  <h1>Your Orders</h1>
+  <% if (orders.length === 0) { %>
+      <div class="no-orders-animation">
+          <lottie-player src="https://lottie.host/d2969b27-77c2-49e4-85bd-e7c57bd73758/NjB1X4SEYL.json" 
+                         background="transparent" 
+                         speed="1" 
+                         style="width: 300px; height: 300px; margin: 0 auto;" 
+                         loop 
+                         autoplay>
+          </lottie-player>
+          <p class="no-orders-message">No orders found.</p>
+      </div>
+  <% } else { %>
+      <% orders.forEach(order => { %>
+          <div class="order-item">
+              <div class="product-details">
+                  <span class="order-id">Order ID: <%= order._id %></span>
+                  <span class="status <%= order.paymentStatus === 'Paid' ? 'status-paid' : 'status-failed' %>">
+                      <%= order.paymentStatus %>
+                  </span>
+                  <div class="order-summary">
+                      <div class="price-breakdown">
+                          <div class="price-item">
+                              <div class="price-label">Original Price</div>
+                              <div class="price-value original-price">₹<%= order.originalPrice %></div>
+                          </div>
+                          <div class="price-item">
+                              <div class="price-label">Discount Amount</div>
+                              <div class="price-value discount-amount">- ₹<%= order.discount %></div>
+                          </div>
+                      </div>
+                      <div class="total-amount">
+                          Total Amount: ₹<%= order.totalPrice %>
+                          <% if (order.discount > 0) { %>
+                              <span class="savings-badge">You saved ₹<%= order.discount %></span>
+                          <% } %>
+                      </div>
+                      <% if (order.couponId) { %>
+                          <p class="coupon">Coupon Discount: ₹<%= order.couponDiscount %></p>
+                      <% } %>
+                      <% let totalProductCount = 0; %>
+                      <% order.productItems.forEach(product => { %>
+                          <% totalProductCount += product.quantity; %>
+                      <% }) %>
+                      <p class="total-items"><strong>Total Items:</strong> <%= totalProductCount %></p>
+                  </div>
+              </div>
+              <div class="price-view">
+                  <% if (order.paymentStatus === 'Paid') { %>
+                      <a href="/orderDetails/<%= order._id %>">
+                          <button class="view-btn">View Details</button>
+                      </a>
+                  <% } else if (order.paymentStatus === 'Failed') { %>
+                      <a href="/failedPayment/<%= order._id %>">
+                          <button class="view-btn view-btn-failed">Review Payment</button>
+                      </a>
+                  <% } %>
+              </div>
+          </div>
+      <% }) %>
+  <% } %>
+</div>
+
+
+
+</div>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+
+<%- include('../layout/user/footer') %>

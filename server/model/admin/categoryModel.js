@@ -7,7 +7,15 @@ const categorySchema=new mongoose.Schema({
     description:{
         type:String,
         required:true
-    }
+    },
+    status: {
+        type: String,
+        default: 'Active'
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false
+    },
 })
 
 const Category= mongoose.model('Category',categorySchema)

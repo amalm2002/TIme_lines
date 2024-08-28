@@ -1,0 +1,169 @@
+<%- include('../layout/user/header') %>
+    <%- include('../layout/userProfile/sidebar') %>
+        <style>
+            .address-section {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                margin: 0 auto;
+                justify-content: center;
+            }
+
+            .address-form {
+                flex: 1 1 300px;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            h2 {
+                color: #333;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #333;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: all 0.3s ease;
+                text-align: center;
+            }
+
+            .btn:hover {
+                background-color: #0056b3;
+            }
+
+            .error-message {
+                color: red;
+                font-size: 0.875em;
+                margin-top: -5px;
+                margin-bottom: 10px;
+            }
+
+            @media (max-width: 768px) {
+                .address-section {
+                    flex-direction: column;
+                }
+            }
+        </style>
+
+        <body>
+            <div class="address-section">
+                <div class="address-form">
+                    <h2>Edit your Address</h2>
+                    <!-- <form id="editAddressForm" data-address-id="<%=address._id%>"> -->
+                    <form id="editAddressForm" data-address-id="<%= address._id %>">
+                        <input type="text" id="addressStreet" placeholder="Street Address" value="<%=address.street%>">
+                        <input type="text" id="addressCity" placeholder="City" value="<%=address.city%>">
+                        <input type="text" id="addressState" placeholder="State/Province" value="<%=address.state%>">
+                        <input type="text" id="addressPincode" placeholder="ZIP/Pincode" value="<%=address.pincode%>">
+                        <input type="hidden" id="page" value="<%= page %>">
+                        <div id="pincodeError" class="error-message"></div>
+                        <input type="text" id="addressCountry" placeholder="Country" value="<%=address.country%>">
+                        <button type="submit" class="btn">Save Address</button>
+                    </form>
+                </div>
+            </div>
+            </div>
+            </div>
+            <script>
+
+                document.getElementById('editAddressForm').addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const addressId = event.target.getAttribute('data-address-id');
+                    const street = document.getElementById('addressStreet').value;
+                    const city = document.getElementById('addressCity').value;
+                    const state = document.getElementById('addressState').value;
+                    const pincode = document.getElementById('addressPincode').value;
+                    const country = document.getElementById('addressCountry').value;
+                    const page = document.getElementById('page').value;
+
+                    document.getElementById('pincodeError').textContent = '';
+
+                    let isValid = true
+
+                    if (!pincode) {
+                        document.getElementById('pincodeError').textContent = 'ZIP/Pincode is required'
+                        isValid = false
+                    } else if (!/^\d{6}$/.test(pincode)) {
+                        document.getElementById('pincodeError').textContent = 'Pincode must be a 6-digit number'
+                        isValid = false
+                    }
+
+                    if (!isValid) {
+                        return
+                    }
+
+                    try {
+
+                        fetch(`/editAddress/${addressId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ street, city, state, pincode, country, page })
+                        })
+                            .then(async response => {
+                                console.log(response, "__________________________________!!!");
+                                const data = await response.json();
+                                if (response.ok) {
+                                    if (data.page === "checkout") {
+                                        window.location.href = '/checkout';
+                                    } else {
+                                        window.location.href = '/address';
+                                    }
+                                } else {
+                                    alert(data.error || 'An unexpected error occurred');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('An unexpected error occurred');
+                            });
+
+                    } catch (error) {
+                        console.error('Error during address edit:', error);
+                        alert('A network error occurred');
+                    }
+                });
+
+                document.getElementById('addressPincode').addEventListener('input', (event) => {
+                    const pincode = event.target.value
+                    const pincodeError = document.getElementById('pincodeError')
+
+                    if (!/^\d*$/.test(pincode)) {
+                        pincodeError.textContent = 'Pincode must be a number';
+                    } else if (pincode.length !== 6 && pincode.length > 0) {
+                        pincodeError.textContent = 'Pincode must be exactly 6 digits';
+                    } else {
+                        pincodeError.textContent = '';
+                    }
+                })
+
+            </script>
+
+            <%- include('../layout/user/footer') %>

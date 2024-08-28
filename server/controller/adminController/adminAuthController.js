@@ -1,13 +1,67 @@
 const User = require('../../model/user/userModel')
 const Category = require('../../model/admin/categoryModel')
 const Brand=require('../../model/admin/brandModel')
+const Order = require('../../model/user/orderModel')
+const {getTopSellingProducts}=require('../../controller/adminController/dashboardChart')
+
 
 const adminLogin = (req, res) => {
     res.render('admin/adminLogin')
 }
-const adminHome = (req, res) => {
-    res.render('admin/adminIndex')
-}
+// const adminHome = (req, res) => {
+//     res.render('admin/adminIndex')
+// }
+
+const adminHome = async (req, res) => {
+    try {
+        const  {topSellingProducts,topSellingCategories,topSellingBrands}=await getTopSellingProducts()
+        const safeTopSellingProducts = Array.isArray(topSellingProducts) ? topSellingProducts : [];
+        const safeTopSellingCategories = Array.isArray(topSellingCategories) ? topSellingCategories : [];
+        const safeTopSellingBrands = Array.isArray(topSellingBrands) ? topSellingBrands : [];
+        
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const todaysOrders = await Order.find({
+            dateOrdered: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            }
+        });
+
+        const chartData = {
+            totalOrders: todaysOrders.length,
+            totalAmount: todaysOrders.reduce((sum, order) => sum + order.totalPrice, 0),
+            orderStatus: {
+                pending: 0,
+                completed: 0,
+                cancelled: 0,
+                delivered: 0,
+            }
+        };
+
+        todaysOrders.forEach(order => {
+            if (order.status === 'Pending') chartData.orderStatus.pending++;
+            if (order.status === 'Completed') chartData.orderStatus.completed++;
+            if (order.status === 'Cancelled') chartData.orderStatus.cancelled++;
+            if (order.status === 'Delivered') chartData.orderStatus.delivered++;
+        });
+
+        res.render('admin/adminIndex', { chartData,
+            topSellingProducts: safeTopSellingProducts,
+            topSellingCategories: safeTopSellingCategories ,
+            topSellingBrands:safeTopSellingBrands
+           });
+    } catch (error) {
+        console.error("Error retrieving today's orders:", error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+
 //Admin login
 const Login = async (req, res) => {
     let adminPass = process.env.ADMIN_PASS;
@@ -82,7 +136,6 @@ const changeStatus = async (req, res) => {
 const category = async (req, res) => {
     try {
         const categorys = await Category.find()
-        // console.log('this categorys....',categorys);
         res.render('admin/category', { categorys })
     } catch (error) {
         console.error('error for category', error);
@@ -129,25 +182,23 @@ const addCategory = async (req, res) => {
 
 // Edit category
 const updateCategory = async (req, res) => {
-
-
     try {
-        console.log('update category')
+        console.log('update category');
         const id = req.params.id;
         const { name, description } = req.body;
 
-        console.log('this is the name of body:', name);
-        console.log('this is the id :', id);
+        const existingCategory = await Category.findOne({ name, _id: { $ne: id } });
+        
+        if (existingCategory) {
+            return res.status(400).json({ error: "Category already exists" });
+        }
         const category = await Category.findByIdAndUpdate(id, { name, description }, { new: true });
-
-        console.log('this is update categories...:', category);
-
+        
         if (!category) {
             console.log('Category not found:', id);
             return res.status(404).json({ error: 'Category not found' });
         }
 
-        console.log('Updated successfully:', category);
         res.status(200).json({ message: 'Updated successfully', category });
     } catch (error) {
         console.error('Error updating category:', error);
@@ -155,35 +206,34 @@ const updateCategory = async (req, res) => {
     }
 };
 
-//delete category
-const deleteCategory = async (req, res) => {
-    const id = req.params.id
-    console.log('this is deleted id :', id);
+
+const updateCategoryStatus = async (req, res) => {
+    const id = req.params.id;
+    const { isBlocked } = req.body;
+
     try {
-        const category = await Category.findById(id)
+        const category = await Category.findById(id);
         if (!category) {
-            console.log('Category not found with id:', id)
-            return res.status(404).json({ error: 'Category not found' })
+            return res.status(404).json({ error: 'Category not found' });
         }
 
-        console.log('category found :', category);
+        category.isBlocked = isBlocked;
+        category.status = isBlocked ? 'Blocked' : 'Active'; 
+        await category.save();
 
-        await Category.findByIdAndDelete(id)
-        console.log('category deleted successfuly');
-
-        res.status(200).json({ message: 'Deleted successfully' })
+        res.status(200).json({ message: `Category ${isBlocked ? 'blocked' : 'unblocked'} successfully` });
     } catch (error) {
-        console.log('error for deleting category', error)
-        res.status(500).json({ error: 'faild to delete category' })
+        console.log('Error updating category status:', error);
+        res.status(500).json({ error: 'Failed to update category status' });
     }
+};
 
-}
+
 
 //brands
 const brand=async (req,res)=>{
     try {
         const brands = await Brand.find()
-        // console.log('this categorys....',categorys);
         res.render('admin/brand', { brands })
     } catch (error) {
         console.error('error for category', error);
@@ -216,12 +266,7 @@ const addBrands=async (req,res)=>{
             return res.status(400).json({error:"brand alredy exists"})
         }
 
-
         const newBrand=new Brand(req.body)
-        // const newBrand = new Brand({
-        //     ...req.body,
-        //     createdAt: new Date() 
-        // });
         await newBrand.save()
 
         res.json({newBrand})
@@ -240,18 +285,16 @@ const updateBrand = async (req, res) => {
         const id = req.params.id;
         const { name, description } = req.body;
 
-        console.log('this is the name of body:', name);
-        console.log('this is the id :', id);
+        const exisingsBrand=await Brand.findOne({name,_id:{$ne:id}})        
+        if (exisingsBrand) {
+            return res.status(400).json({ error: "Brand already exists" });
+        }
         const brand = await Brand.findByIdAndUpdate(id, { name, description }, { new: true });
-
-        console.log('this is update categories...:', brand);
 
         if (!brand) {
             console.log('brand not found:', id);
             return res.status(404).json({ error: 'brand not found' });
         }
-
-        console.log('Updated successfully:', brand);
         res.status(200).json({ message: 'Updated successfully', brand });
     } catch (error) {
         console.error('Error updating category:', error);
@@ -259,7 +302,7 @@ const updateBrand = async (req, res) => {
     }
 };
 
-//delete brand
+// delete brand
 const deleteBrand= async (req,res)=>{
     const id=req.params.id
     try {
@@ -277,6 +320,10 @@ const deleteBrand= async (req,res)=>{
         res.status(500).json({error:'server error'})
     }
 }
+
+
+
+
 
 const Logout = (req, res) => {
     req.session.destroy((error) => {
@@ -299,10 +346,10 @@ module.exports = {
     checkCategory,
     addCategory,
     updateCategory,
-    deleteCategory,
     brand,
     checkBrand,
     addBrands,
     updateBrand,
-    deleteBrand
+    deleteBrand,
+    updateCategoryStatus
 }

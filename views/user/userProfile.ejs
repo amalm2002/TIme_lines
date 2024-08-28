@@ -1,0 +1,140 @@
+<%- include('../layout/user/header') %>
+
+<%- include('../layout/userProfile/sidebar') %>
+
+<div class="profile-container">
+    <div class="profile-content">
+      <h1>User Profile</h1>
+      <div class="profile-view">
+        <div class="profile-image-container">
+          <img id="profileImage" src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="User Image">
+          <div class="profile-image-overlay">
+            <button class="styled-button" onclick="toggleEdit()">Edit</button>
+          </div>
+        </div>
+        <div class="profile-info">
+          <input type="text" id="userName" value="<%= user.name %>" readonly>
+          <input type="email" id="userEmail" value="<%= user.email %>" readonly>
+        </div>
+      </div>
+      <form class="edit-form" id="editForm" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="newImage">Profile Image</label>
+          <input type="file" class="form-control-file" name="profileImage" id="newImage" accept="image/*" onchange="previewImage(event)">
+          <p id="fileName"></p>
+          <img id="previewImage" src="" alt="Preview" style="display: none; width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 20px;">
+        </div>
+        <div class="form-group">
+          <label for="editName">Name</label>
+          <input type="text" class="form-control" name="name" id="editName">
+        </div>
+        <button type="submit" class="styled-button">Save</button>
+      </form>
+    </div>
+  
+    <!-- Referral Link Section -->
+    <div class="referral-section">
+      <h3>Your Referral Link</h3>
+      <div class="referral-link-container">
+        <input type="text" id="referralLink" value="<%= referralLink %>" readonly>
+        <button id="copyReferralLinkBtn" onclick="copyReferralLink()">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // JavaScript code remains the same
+  </script>
+
+</div>
+
+<script>
+    function toggleEdit() {
+        const profileView = document.querySelector('.profile-view');
+        const editForm = document.querySelector('.edit-form');
+        if (editForm.style.display === 'none' || editForm.style.display === '') {
+            profileView.style.display = 'none';
+            editForm.style.display = 'block';
+            document.getElementById('previewImage').src = document.getElementById('profileImage').src;
+            document.getElementById('previewImage').style.display = 'block';
+            document.getElementById('editName').value = document.getElementById('userName').value;
+        } else {
+            profileView.style.display = 'block';
+            editForm.style.display = 'none';
+        }
+    }
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        // const file= document.getElementById('profileImage').src=URL.createObjectURL(event.target.file[0])
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('previewImage').style.display = 'block';
+                document.getElementById('fileName').textContent = file.name;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.getElementById('editForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData();
+        const newImage = document.getElementById('newImage').files[0];
+        const newName = document.getElementById('editName').value;
+
+        formData.append('name', newName);
+        if (newImage) {
+            formData.append('profileImage', newImage);
+        }
+
+        try {
+            const response = await fetch('/userProfile', {
+                method: 'PUT',
+                body: formData
+            });
+
+            const result = await response.json();
+            console.log(result);
+            if (response.ok) {
+                document.getElementById('userName').value = newName;
+                if (result?.profileImage) {
+                    document.getElementById('profileImage').src = `/images/products/${result?.profileImage}`;
+                }
+                toggleEdit();
+                window.location.reload();
+            } else {
+                console.error(result.error);
+                alert('Error updating profile: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('An error occurred while updating the profile.');
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const copyBtn = document.getElementById('copyReferralLinkBtn');
+    const referralLinkInput = document.getElementById('referralLink');
+  
+    copyBtn.addEventListener('click', () => {
+        referralLinkInput.select();
+        referralLinkInput.setSelectionRange(0, 99999); // For mobile devices
+  
+        try {
+            const successful = document.execCommand('copy');
+            const message = successful ? 'Referral link copied to clipboard!' : 'Failed to copy referral link.';
+            alert(message);
+        } catch (err) {
+            console.error('Failed to copy referral link:', err);
+        }
+    });
+  });
+  </script>
+
+<%- include('../layout/user/footer') %>

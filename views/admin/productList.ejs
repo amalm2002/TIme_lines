@@ -1,4 +1,4 @@
-<!-- <%- include('../layout/admin/header') %>
+<%- include('../layout/admin/header') %>
     </body>
     <style>
         .product-image {
@@ -11,6 +11,30 @@
         .product-name-cell {
             display: flex;
             align-items: center;
+        }
+
+        #Active {
+            background-color: green;
+            color: white;
+            text-decoration: none;
+            padding-left: 18px;
+            padding-right: 18px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            border-radius: 5px;
+            font-size: small;
+        }
+
+        #Blocked {
+            background-color: red;
+            color: white;
+            text-decoration: none;
+            padding-left: 12px;
+            padding-right: 12px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            border-radius: 5px;
+            font-size: small;
         }
     </style>
     <div class="container mt-4">
@@ -38,33 +62,39 @@
                                 <%= index + 1 %>
                             </td>
                             <td class="product-name-cell">
-                                <img src="<%= product.images[0].replace('public','') || 'path_to_default_image.jpg' %>"
-                                    alt="Product Image" class="product-image">
+                                <img style="width: 50px; height: 50px" src="/images/products/<%= product.images[0] %>"
+                                    alt="<%= product.images[0] %>">
                                 <span>
                                     <%= product.name %>
                                 </span>
                             </td>
                             <td>
-                                <%= product.brand %>
+                                <%= product.brand?.name %>
                             </td>
                             <td>
                                 <%= product.modelNumber %>
                             </td>
-                            <td>$<%= product.price.toFixed(2) %>
+                            <td>₹<%= product.price.toFixed(2) %>
                             </td>
                             <td>
                                 <%= product.stockQuantity %>
                             </td>
-                            <td><span class="badge bg-<%= product.status === 'Active' ? 'success' : 'danger' %>">
-                                    <%= product.status || 'Active' %>
-                                </span></td>
                             <td>
-                                <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-warning">Edit</a>
-                                    <button class="btn btn-sm btn-danger" onclick="changeStatus('<%= product._id %>','<%= product.status === Active ? Blocked : Active %>')">
-                                    <%= product.status === 'Active' ? 'Block' : 'Unblock' %>
-                                </button>
-                                
+                                <!-- <span id="<%= product.status%>">
+                                    <%= product.status || 'Active' %>
+                                </span> -->
+                                <a id="<%= product.status%>"
+                                    href="/admin/productStatus/<%-product._id%>?status=<%= product.status%>">
+                                    <%=product.status%>
+                                </a>
                             </td>
+                            <td>
+                                <!-- <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-warning">Edit</a> -->
+                                <a href="/admin/editProductPage/<%=product._id%>" class="btn btn-sm btn-warning">Edit</a>
+                            </td>
+
+
+
                         </tr>
                         <% }) %>
                             <% }else{%>
@@ -75,17 +105,31 @@
 
         <nav aria-label="Product list pagination">
             <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                </li>
-                <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Next</a>
-                </li>
+                <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>&limit=<%= limit %>">Previous</a>
+                    </li>
+                <% } else { %>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                    </li>
+                <% } %>
+    
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                    </li>
+                <% } %>
+    
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>&limit=<%= limit %>">Next</a>
+                    </li>
+                <% } else { %>
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Next</a>
+                    </li>
+                <% } %>
             </ul>
         </nav>
     </div>
@@ -96,165 +140,40 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function changeStatus(productId,newStatus) {
-            fetch (`/admin/productStatus/${productId}`,{
-                method:'put',
-                headers:{
-                     'Content-Type': 'application/json'
+        function changeStatus(productId, newStatus) {
+            fetch(`/admin/productStatus/${productId}`, {
+                method: 'put',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                body:JSON.stringify({status:newStatus})
-            }).then((response)=>response.json())
-            .then((data)=>{
-                if (data.success) {
-                    const productRow=document.getElementById(`product-${productId}`)
-                    const statusCell=productRow.querySelector('.status span')
-                    const button=productRow.querySelector('button')
+                body: JSON.stringify({ status: newStatus })
+            }).then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        const productRow = document.getElementById(`product-${productId}`)
+                        const statusCell = productRow.querySelector('.status span')
+                        const button = productRow.querySelector('button')
 
-                    if (newStatus === 'Blocked') {
-                    statusCell.className = 'badge bg-danger';
-                    statusCell.textContent = 'Blocked';
-                    button.textContent = 'Unblock';
-                    button.className = 'btn btn-sm btn-success';
-                    button.setAttribute('onclick', `changeStatus('${productId}', 'Active')`);
-                } else {
-                    statusCell.className = 'badge bg-success';
-                    statusCell.textContent = 'Active';
-                    button.textContent = 'Block';
-                    button.className = 'btn btn-sm btn-danger';
-                    button.setAttribute('onclick', `changeStatus('${productId}', 'Blocked')`);
-                }
-            } else {
-                console.error('Error updating status:', data.error);
-            }
-            }).catch(error=>console.error('product status error is showing on:',error))
+                        if (newStatus === 'Blocked') {
+                            statusCell.className = 'badge bg-danger';
+                            statusCell.textContent = 'Blocked';
+                            button.textContent = 'Unblock';
+                            button.className = 'btn btn-sm btn-success';
+                            button.setAttribute('onclick', `changeStatus('${productId}', 'Active')`);
+                        } else {
+                            statusCell.className = 'badge bg-success';
+                            statusCell.textContent = 'Active';
+                            button.textContent = 'Block';
+                            button.className = 'btn btn-sm btn-danger';
+                            button.setAttribute('onclick', `changeStatus('${productId}', 'Blocked')`);
+                        }
+                    } else {
+                        console.error('Error updating status:', data.error);
+                    }
+                }).catch(error => console.error('product status error is showing on:', error))
         }
     </script>
 
     </body>
-    </html> -->
 
-
-
-    <%- include('../layout/admin/header') %>
-<style>
-    .product-image {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        margin-right: 10px;
-    }
-
-    .product-name-cell {
-        display: flex;
-        align-items: center;
-    }
-</style>
-<div class="container mt-4">
-    <h1 class="mb-4">Product Listing</h1>
-    <a href="/admin/addProductPage" class="btn btn-primary mb-3">Add New Product</a>
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Product</th>
-                <th>Brand</th>
-                <th>Model</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="productTableBody">
-            <% if (products && products.length > 0) { %>
-                <% products.forEach((product, index) => { %>
-                    <tr id="product-<%= product._id %>">
-                        <td><%= index + 1 %></td>
-                        <td class="product-name-cell">
-                            <img src="<%= product.images[0].replace('public', '') || 'path_to_default_image.jpg' %>"
-                                 alt="Product Image" class="product-image">
-                            <span><%= product.name %></span>
-                        </td>
-                        <td><%= product.brand %></td>
-                        <td><%= product.modelNumber %></td>
-                        <td>$<%= product.price.toFixed(2) %></td>
-                        <td><%= product.stockQuantity %></td>
-                        <td class="status">
-                            <span class="badge bg-<%= product.status === 'Active' ? 'success' : 'danger' %>">
-                                <%= product.status || 'Active' %>
-                            </span>
-                        </td>
-                        <td>
-                            <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-warning">Edit</a>
-                            <!-- <button class="btn btn-sm btn-danger" 
-                                    onclick="changeStatus('<%= product._id %>', '<%= product.status === 'Active' ? 'Blocked' : 'Active' %>')">
-                                <%= product.status === 'Active' ? 'Block' : 'Unblock' %>
-                            </button> -->
-                        </td>
-                    </tr>
-                <% }) %>
-            <% } else { %>
-                <tr>
-                    <td colspan="8">No products found</td>
-                </tr>
-            <% } %>
-        </tbody>
-    </table>
-    <nav aria-label="Product list pagination">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-            </li>
-            <li class="page-item active" aria-current="page">
-                <a class="page-link" href="#">1</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    function changeStatus(productId, newStatus) {
-        fetch(`/admin/productStatus/${productId}`, {
-            method: 'put',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        }).then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  const productRow = document.getElementById(`product-${productId}`);
-                  const statusCell = productRow.querySelector('.status span');
-                  const button = productRow.querySelector('button');
-
-                  if (newStatus === 'Blocked') {
-                      statusCell.className = 'badge bg-danger';
-                      statusCell.textContent = 'Blocked';
-                      button.textContent = 'Unblock';
-                      button.className = 'btn btn-sm btn-success';
-                      button.setAttribute('onclick', `changeStatus('${productId}', 'Active')`);
-                  } else {
-                      statusCell.className = 'badge bg-success';
-                      statusCell.textContent = 'Active';
-                      button.textContent = 'Block';
-                      button.className = 'btn btn-sm btn-danger';
-                      button.setAttribute('onclick', `changeStatus('${productId}', 'Blocked')`);
-                  }
-              } else {
-                  console.error('Error updating status:', data.error);
-              }
-          }).catch(error => console.error('Error updating product status:', error));
-    }
-</script>
-</body>
-</html>
+    </html>

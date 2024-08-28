@@ -29,7 +29,6 @@
     </style>
     <div class="container mt-5">
         <h2>User Management</h2>
-        <!-- User management table -->
         <table class="table table-bordered table-hover mt-3">
             <thead class="thead-dark">
                 <tr>
@@ -43,7 +42,7 @@
             </thead>
             <tbody>
                 <% users.forEach((user, index)=> { %>
-                    <tr id="user-<%= user._id %>"> <!-- Add ID to user row for reference -->
+                    <tr id="user-<%= user._id %>"> 
                         <td><%= index + 1 %></td>
                         <td><%= user.name %></td>
                         <td><%= user.email %></td>
@@ -55,7 +54,6 @@
                         </td>
                     </tr>
                 <% }); %>
-                <!-- Add more rows as needed -->
             </tbody>
         </table>
     </div>
@@ -92,7 +90,6 @@
                         const statusCell = userRow.querySelector('.status');
                         statusCell.textContent = data.status;
 
-                        // Disable/enable buttons based on new status
                         if (newStatus === 'Blocked') {
                             userRow.querySelector('.btn-block').disabled = true;
                             userRow.querySelector('.btn-unblock').disabled = false;
