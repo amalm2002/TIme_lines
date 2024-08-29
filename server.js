@@ -1,6 +1,6 @@
 const express = require("express");
-require("dotenv").config();
 const cors=require("cors")
+require("dotenv").config();
 const passport= require('passport')
 const authRoute=require('./server/routes/user/auth')
 require('./passport')

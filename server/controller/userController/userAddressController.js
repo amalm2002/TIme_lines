@@ -24,61 +24,6 @@ const userAddress = async (req, res) => {
     }
 }
 
-//render the addAddress page
-// const addAddressPage = async (req, res) => {
-//     try {
-//         const page = req.query?.page;
-//         console.log(page, "add address--------------------->");
-//         const userId = req.session.user._id
-//         const user = await User.findOne({ _id: userId })
-
-//         // console.log("address section user :",user);
-
-//         if (!user) {
-//             return res.status(404).json({ error: "user not found" })
-//         }
-//         res.render('user/addAddress', { user, page })
-
-//     } catch (error) {
-//         console.error('the error on user Address page :', error)
-//     }
-// }
-
-// //add address 
-// const addAddress = async (req, res) => {
-//     try {
-//         const userId = req.session.user._id
-//         const { street, city, state, pincode, country, page } = req.body;
-//         console.log(page, "==========================================>");
-
-
-//         if (!street || !city || !state || !pincode || !country) {
-//             return res.status(400).json({ error: 'All fields are required' });
-//         }
-
-//         if (!/^\d{6}$/.test(pincode)) {
-//             return res.status(400).json({ error: 'Pincode must be a 6-digit number' });
-//         }
-//         const user = await User.findOne({ _id: userId })
-//         // confirm.log('user details >>>>>>>>>>>>>>>>>><<<<<<<<<:',user)
-//         if (!user) {
-//             return res.status(404).json({ error: 'user not found' })
-//         }
-
-//         if (user.address.length >= 3) {
-//             return res.status(400).json({ error: 'Maximum of 3 address allowed' })
-//         }
-
-//         // user.address.push(req.body)
-//         user.address.push({ street, city, state, pincode, country });
-//         await user.save()
-
-//         // res.status(200).json({ newAddress: req.body, page: page })
-//         res.status(200).json({ newAddress: { street, city, state, pincode, country }, page });
-//     } catch (error) {
-//         console.error('the error on add address :', error)
-//     }
-// }
 
 
 const addAddressPage = async (req, res) => {
@@ -102,7 +47,7 @@ const addAddress = async (req, res) => {
     try {
         const userId = req.session.user._id;
         const { street, city, state, pincode, country, page } = req.body;
-        console.log(page, "==========================================>");
+        // console.log(page, "==========================================>");
 
         if (!street || !city || !state || !pincode || !country) {
             return res.status(400).json({ error: 'All fields are required' });
@@ -136,7 +81,7 @@ const addAddress = async (req, res) => {
 const editAddressPage = async (req, res) => {
     try {
         const page = req.query?.page;
-        console.log(page, "--------------------->");
+        // console.log(page, "--------------------->");
         const userId = req.session.user._id;
         const addressId = req.params.addressId;
         const user = await User.findOne({ _id: userId, 'address._id': addressId });
@@ -163,7 +108,7 @@ const editAddress = async (req, res) => {
         const userId = req.session.user._id;
         const addressId = req.params.addressId;
         const { street, city, state, pincode, country, page } = req.body;
-        console.log(page, "==========================================>");
+        // console.log(page, "==========================================>");
 
         if (!street || !city || !state || !pincode || !country) {
             return res.status(400).json({ error: 'All fields are required' });

@@ -155,14 +155,17 @@ const editProduct = async (req, res) => {
         const id = req.params.id
 
         const { name, brand, modelNumber, category, price, stockQuantity, warranty, description, existingImages,productOffer=0,offerEndDate=null } = req.body;
+       
 
-        console.log("reached here",productOffer);
+        const existingProduct=await Product.findOne({name:name})
 
-        // let images = req.files ? req.files.map(file => file?.filename) : []
+        if (existingProduct===name) {
+            return res.status(400).json({error:'this product have already in Product schema'})
+        }
+
+      
         const existingImagesArray = Array.isArray(existingImages) ? existingImages : []
 
-        // console.log(existingImagesArray, "Existing Images.......")
-        // console.log(req.files.length,"files length from request")
 
         if (existingImagesArray.length + (req.files ? req.files.length : 0) !== 3) {
             return res.status(500).json({ error: 'you must have exactly 3 images' })

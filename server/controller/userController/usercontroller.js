@@ -113,10 +113,8 @@ const productDetails = async (req, res) => {
         const userId = req.session.user ? req.session.user._id : req.session.userNotAuthenticated?.id;
         const productId = req.params.id;
 
-        // Fetch the product and populate the category
         const product = await Product.findById(productId).populate("brand").populate('category');
 
-        // Check if the product or its category is not found or if the category is not active
         if (!product || (product.category && product.category.status !== 'Active')) {
             return res.status(404).render('user/productDetails', {
                 error: 'Product not found or category is not active',
@@ -128,13 +126,11 @@ const productDetails = async (req, res) => {
             });
         }
 
-        // Find related products
         const relatedProducts = await Product.find({
             _id: { $ne: productId },
-            category: product.category._id // Use product.category._id to match the category
+            category: product.category._id 
         }).limit(4);
 
-        // Get wishlist products if user is logged in
         let wishlistProducts = [];
         if (userId) {
             const wishlist = await Wishlist.findOne({ userId }).populate('products');
@@ -232,7 +228,7 @@ const productListPage = async (req, res) => {
 
 const filterProducts = async (req, res) => {
     try {
-        console.log('Received filter data:', req.body);
+        // console.log('Received filter data:', req.body);
         const { categories, brands, priceRanges, sort, maxPrice } = req.body;
         const query = { status: 'Active' };
 

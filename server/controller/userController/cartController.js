@@ -1,9 +1,5 @@
 const Product = require('../../model/admin/productModel');
-const Category = require('../../model/admin/categoryModel')
-const Brand = require('../../model/admin/brandModel');
-const User = require('../../model/user/userModel');
 const Cart = require('../../model/user/cartModel');
-const Coupon = require('../../model/admin/coponModel')
 const CategoryOffer=require('../../model/admin/categoryOfferModel');
 const { path } = require('pdfkit');
 const { model } = require('mongoose');

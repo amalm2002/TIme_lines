@@ -1,20 +1,20 @@
-const express = require('express');
-const route = express.Router();
-const userAuthController = require('../../controller/userController/userAuthController');
+const express = require('express')
+const route = express.Router()
+const userAuthController = require('../../controller/userController/userAuthController')
 const forgotPasswordController=require('../../controller/userController/forgotPasswordController')
-const userController = require('../../controller/userController/usercontroller');
-const userProfileController= require('../../controller/userController/userProfileController');
-const changePasswordController= require('../../controller/userController/changePasswordController');
-const userAddressController= require('../../controller/userController/userAddressController');
-const cartController= require('../../controller/userController/cartController');
-const checkOutController= require('../../controller/userController/checkOutContrller');
-const orderController= require('../../controller/userController/orderController');
-const orderDetailsController= require('../../controller/userController/orderDetailsController');
-const wishlistController= require('../../controller/userController/wishlistController');
-const walletController= require('../../controller/userController/walletController');
-const couponController= require('../../controller/userController/couponUserController');
+const userController = require('../../controller/userController/usercontroller')
+const userProfileController= require('../../controller/userController/userProfileController')
+const changePasswordController= require('../../controller/userController/changePasswordController')
+const userAddressController= require('../../controller/userController/userAddressController')
+const cartController= require('../../controller/userController/cartController')
+const checkOutController= require('../../controller/userController/checkOutContrller')
+const orderController= require('../../controller/userController/orderController')
+const orderDetailsController= require('../../controller/userController/orderDetailsController')
+const wishlistController= require('../../controller/userController/wishlistController')
+const walletController= require('../../controller/userController/walletController')
+const couponController= require('../../controller/userController/couponUserController')
 const downloadInvoiceController=require('../../controller/userController/downloadInvoiceController')
-const middleware = require('../../middilware/middleware');
+const middleware = require('../../middilware/middleware')
 const upload=require('../../../config/multerConnection')
 
 
@@ -101,7 +101,7 @@ route.post('/retryPayment',middleware.ensureAuthenticated,orderDetailsController
 route.get('/wishlist',middleware.ensureAuthenticated,wishlistController.wishlistPage)
 route.post('/addToWishlist',middleware.ensureAuthenticated,wishlistController.addToWishlist)
 route.delete('/removeFromWishlist',middleware.ensureAuthenticated,wishlistController.removeWishlist)
-3
+
 //wallet page
 route.get('/walletPage',middleware.ensureAuthenticated,walletController.walletPage)
 

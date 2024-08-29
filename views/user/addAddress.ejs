@@ -68,13 +68,13 @@
         <h2>Add New Address</h2>
         <form id="addAddressForm">
             <input type="text" id="addressStreet" placeholder="Street Address">
-            <!-- <div id="streetError" class="error-message"></div> -->
+            <div id="streetError" class="error-message"></div>
 
             <input type="text" id="addressCity" placeholder="City">
-            <!-- <div id="cityError" class="error-message"></div> -->
+            <div id="cityError" class="error-message"></div>
 
             <input type="text" id="addressState" placeholder="State/Province">
-            <!-- <div id="stateError" class="error-message"></div> -->
+            <div id="stateError" class="error-message"></div>
 
             <input type="text" id="addressPincode" placeholder="ZIP/Pincode">
             <div id="pincodeError" class="error-message"></div>
@@ -82,7 +82,7 @@
             <input type="hidden" id="page" value="<%= page %>">
 
             <input type="text" id="addressCountry" placeholder="Country">
-            <!-- <div id="countryError" class="error-message"></div> -->
+            <div id="countryError" class="error-message"></div>
 
             <button type="submit" class="btn">Save Address</button>
         </form>
@@ -103,28 +103,28 @@
 
 
 
-                    // document.getElementById('streetError').textContent = '';
-                    // document.getElementById('cityError').textContent = '';
-                    // document.getElementById('stateError').textContent = '';
+                    document.getElementById('streetError').textContent = '';
+                    document.getElementById('cityError').textContent = '';
+                    document.getElementById('stateError').textContent = '';
                     document.getElementById('pincodeError').textContent = '';
-                    // document.getElementById('countryError').textContent = '';
+                    document.getElementById('countryError').textContent = '';
 
                     let isValid = true;
 
-                    // if (!street) {
-                    //     document.getElementById('streetError').textContent = 'Street Address is required';
-                    //     isValid = false;
-                    // }
+                    if (!street) {
+                        document.getElementById('streetError').textContent = 'Street Address is required';
+                        isValid = false;
+                    }
 
-                    // if (!city) {
-                    //     document.getElementById('cityError').textContent = 'City is required';
-                    //     isValid = false;
-                    // }
+                    if (!city) {
+                        document.getElementById('cityError').textContent = 'City is required';
+                        isValid = false;
+                    }
 
-                    // if (!state) {
-                    //     document.getElementById('stateError').textContent = 'State/Province is required';
-                    //     isValid = false;
-                    // }
+                    if (!state) {
+                        document.getElementById('stateError').textContent = 'State/Province is required';
+                        isValid = false;
+                    }
 
                     if (!pincode) {
                         document.getElementById('pincodeError').textContent = 'ZIP/Pincode is required';
@@ -134,10 +134,10 @@
                         isValid = false;
                     }
 
-                    // if (!country) {
-                    //     document.getElementById('countryError').textContent = 'Country is required';
-                    //     isValid = false;
-                    // }
+                    if (!country) {
+                        document.getElementById('countryError').textContent = 'Country is required';
+                        isValid = false;
+                    }
 
                     if (!isValid) return;
                     fetch('/addAddress', {
@@ -172,15 +172,15 @@
                 });
 
 
-                // const inputFields = ['addressStreet', 'addressCity', 'addressState', 'addressPincode', 'addressCountry'];
-                // inputFields.forEach(id => {
-                //     document.getElementById(id).addEventListener('input', (event) => {
-                //         const errorField = document.getElementById(`${id.replace('address', '').toLowerCase()}Error`);
-                //         if (event.target.value.trim() !== '') {
-                //             errorField.textContent = '';
-                //         }
-                //     });
-                // });
+                const inputFields = ['addressStreet', 'addressCity', 'addressState', 'addressPincode', 'addressCountry'];
+                inputFields.forEach(id => {
+                    document.getElementById(id).addEventListener('input', (event) => {
+                        const errorField = document.getElementById(`${id.replace('address', '').toLowerCase()}Error`);
+                        if (event.target.value.trim() !== '') {
+                            errorField.textContent = '';
+                        }
+                    });
+                });
 
                 document.getElementById('addressPincode').addEventListener('input', (event) => {
                     const pincode = event.target.value;
