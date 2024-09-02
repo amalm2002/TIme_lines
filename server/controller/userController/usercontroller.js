@@ -57,57 +57,6 @@ const renderHome = async (req, res) => {
     res.render('user/index', { user, newArrivals, allProducts, wishlistProducts, categoryOffer });
 }
 
-// const productDetails = async (req, res) => {
-//     try {
-//         const userId = req.session.user ? req.session.user._id : req.session.userNotAuthenticated?.id;
-//         const user = await User.findOne({ _id: userId })
-//         const productId = req.params.id
-//         const products = await Product.findById(productId).populate("brand").populate('category')
-//         if (!products) {
-//             return res.status(404).render('user/productDetails', { error: 'Product not found'})
-//         }
-//         // if (!products || ( products.category && products.category.status!=='Active')) {
-//         //     return res.status(404).render('user/productDetails', { error: 'Product not found',
-//         //         products: null, 
-//         //         relatedProducts: [],
-//         //         user: user,
-//         //         wishlistProducts: [],
-//         //         categoryOffer: null
-//         //      })
-//         // }
-//         const relatedProducts = await Product.find({
-//             _id: { $ne: productId },
-//             category: products.category
-//         }).limit(4)
-
-//         let wishlistProducts = [];
-//         if (userId) {
-//             const wishlist = await Wishlist.findOne({ userId }).populate('products');
-//             if (wishlist) {
-//                 wishlistProducts = wishlist.products.map(product => product._id.toString());
-//             }
-//         }
-
-//         const currentDate = new Date();
-//         const categoryOffers = await CategoryOffer.find({ endDate: { $gte: currentDate } })
-//             .populate('categoryId');
-
-//         const categoryOffer = categoryOffers.length > 0 ? categoryOffers[0] : null;
-
-//         res.render('user/productDetails', { products, relatedProducts, user: user, wishlistProducts, categoryOffer })
-//     } catch (error) {
-//         console.error("Error fetching product details:", error);
-//         res.status(500).render('user/productDetails', { error: 'Server error' });
-//         // res.status(500).render('user/productDetails', { error: 'Server error',
-//         //     products: null, 
-//         //     relatedProducts: [],
-//         //     user: user,
-//         //     wishlistProducts: [],
-//         //     categoryOffer: null
-//         // });
-//     }
-// }
-
 const productDetails = async (req, res) => {
     try {
         const userId = req.session.user ? req.session.user._id : req.session.userNotAuthenticated?.id;

@@ -3,39 +3,113 @@
 
 
     <style>
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease-in-out;
-        }
-        .card:hover {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        .table th {
-            background-color: #e9ecef;
-            font-weight: 600;
-        }
-        .table td, .table th {
-            vertical-align: middle;
-        }
-        .btn-action {
-            padding: 0.25rem 0.5rem;
+       
+    
+       .card {
+        border: none;
+        border-radius: 15px;
+        background-color: #ffffff;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(45deg, rgba(123, 237, 159, 0.2), rgba(84, 160, 255, 0.2));
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    .card:hover::before {
+        opacity: 0.5;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Table Styling */
+    .table-responsive {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .table thead {
+        background-color: #a29bfe;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .table th, .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid #e1e1e1;
+        color: #2c3e50;
+    }
+    .table-hover tbody tr:hover td {
+        background-color: #dfe6e9;
+        transition: background-color 0.3s ease;
+    }
+    .table-hover tbody tr:nth-child(odd) {
+        background-color: #f0f3f5;
+    }
+
+    /* Button Styling */
+    .btn-action {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        background-color: #6c5ce7;
+        color: #ffffff;
+        border-radius: 25px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(108, 92, 231, 0.3);
+    }
+    .btn-action:hover {
+        background-color: #5e50c1;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(108, 92, 231, 0.4);
+    }
+
+    /* Typography */
+    h1 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        color: #6c5ce7;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.05em;
+    }
+
+    /* Scrollbar Styling */
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background-color: #6c5ce7;
+        border-radius: 8px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .table-responsive {
             font-size: 0.875rem;
         }
-        .table-responsive {
-            border-radius: 15px;
-            overflow: hidden;
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
         }
-        @media (max-width: 768px) {
-            .table-responsive {
-                font-size: 0.875rem;
-            }
-            .btn-action {
-                padding: 0.2rem 0.4rem;
-                font-size: 0.75rem;
-            }
+        .table th, .table td {
+            padding: 0.75rem;
         }
+    }
+    
+    </style>
+    
+    
+
     </style>
     </head>
     <body>

@@ -49,6 +49,9 @@ route.put('/editProduct/:id',upload.array('images',3),productController.editProd
 route.get('/orderPage',middilware.isAdminAuthenticated,orderController.orderPage)
 route.post('/updateOrderStatus',orderController.orderStatus)
 
+//order view page
+route.get('/orderView/:orderId',middilware.isAdminAuthenticated,orderController.orderViewPage)
+
 //return order
 route.get('/returnOrder/:orderId',middilware.isAdminAuthenticated,returnOrderController.returnOrderPage)
 route.post('/updateRetrunStatus',returnOrderController.returnOrderStatusUpdate)
@@ -58,13 +61,18 @@ route.post('/rejectRetrunStatus',returnOrderController.returnOrderStatusReject)
 route.get('/returnRejected/:orderId',middilware.isAdminAuthenticated,returnOrderController.returnRejectedPage)
 route.get('/returnAccept/:orderId',middilware.isAdminAuthenticated,returnOrderController.returnAcceptPage)
 
-
+//return individual product
+route.get('/returnProduct/:orderId', middilware.isAdminAuthenticated, returnOrderController.returnAcceptIndividualProductPage);
+route.post('/RetrunProductStatus',returnOrderController.returnProductStatusUpdate)
+route.post('/rejectRetrunProductStatus',returnOrderController.rejectProductStatus)
 
 //cancel order page
 route.get('/canceledOrder/:orderId',middilware.isAdminAuthenticated,cancelOrderController.canceledOrderPage)
 
 //delivered order page
 route.get('/deliveredOrder/:orderId',middilware.isAdminAuthenticated,deliveredOrderController.deliveredOrderPage)
+
+
 
 //copon section
 route.get('/addCoponListPage',middilware.isAdminAuthenticated,coponController.couponListPage)
@@ -91,7 +99,7 @@ route.post('/generateReport',middilware.isAdminAuthenticated,salesReportControll
 
 //Dashboard chart
 route.get('/orderChart',middilware.isAdminAuthenticated,dashboardChartController.dashboardChart)
-
+route.get('/orderProfitChart',middilware.isAdminAuthenticated,dashboardChartController.dashboardProfitChart)
 //admin logout
 route.get('/logout',adminAuthController.Logout)
 

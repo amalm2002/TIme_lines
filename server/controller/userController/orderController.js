@@ -49,7 +49,7 @@ const placeOrder = async (req, res) => {
         const couponDiscount = cart.couponId ? cart.couponDiscount || 0 : 0;
         const finalTotalPrice = Math.floor(originalPrice - discount - couponDiscount);
 
-        console.log("=======================================================================>", finalTotalPrice);
+        // console.log("=======================================================================>", finalTotalPrice);
 
 
 
@@ -505,7 +505,7 @@ const updateOrderStatus = async (req, res) => {
 };
 
 
-    const cancelPerticularProduct = async (req, res) => {
+const cancelPerticularProduct = async (req, res) => {
         try {
             const { orderId, productId, newStatus } = req.body;
 
@@ -575,89 +575,7 @@ const updateOrderStatus = async (req, res) => {
             console.error('Error cancelling product:', error);
             res.status(500).json({ success: false, message: 'Server error' });
         }
-    };
-
-
-// const cancelPerticularProduct = async (req, res) => {
-//     try {
-//         const { orderId, productId, newStatus } = req.body;
-
-//         if (!orderId || !productId || !newStatus) {
-//             return res.status(400).json({ success: false, message: 'Missing required fields' });
-//         }
-
-//         const order = await Order.findById(orderId);
-//         if (!order) {
-//             return res.status(404).json({ success: false, message: 'Order not found' });
-//         }
-
-//         const productItemIndex = order.productItems.findIndex(item => item.productId.toString() === productId);
-//         if (productItemIndex === -1) {
-//             return res.status(404).json({ success: false, message: 'Product item not found in order' });
-//         }
-
-//         const product = await Product.findById(productId);
-//         if (!product) {
-//             return res.status(404).json({ success: false, message: 'Product not found' });
-//         }
-
-
-//         if (newStatus === 'Cancelled') {
-    
-//             if (order.couponDiscount > 0 && order.paymentMethod !== 'COD') {
-//                 return res.status(400).json({ success: false, message: 'Cannot cancel product: Coupon applied' });
-//             }
-
-//             order.productItems[productItemIndex].status = newStatus;
-
-//             product.stockQuantity += order.productItems[productItemIndex].quantity;
-//             await product.save();
-
-//             const refundAmount = order.productItems[productItemIndex].offerPrice ?
-//                 order.productItems[productItemIndex].offerPrice :
-//                 order.productItems[productItemIndex].total;
-
-//             order.originalPrice -= refundAmount;
-//             order.totalPrice -= refundAmount;
-
-//             if (order.paymentMethod !== 'COD') {
-//                 let wallet = await Wallet.findOne({ userId: order.userId });
-//                 if (!wallet) {
-//                     wallet = new Wallet({
-//                         userId: order.userId,
-//                         balance: refundAmount,
-//                         transaction: [{
-//                             amount: refundAmount,
-//                             type: 'Credit',
-//                             description: `Refund for canceled product ${product.name} from order ${orderId} (Payment Method: ${order.paymentMethod})`,
-//                             orderId: orderId
-//                         }]
-//                     });
-//                 } else {
-//                     wallet.balance += refundAmount;
-//                     wallet.transaction.push({
-//                         amount: refundAmount,
-//                         type: 'Credit',
-//                         description: `Refund for canceled product ${product.name} from order ${orderId} (Payment Method: ${order.paymentMethod})`,
-//                         orderId: orderId
-//                     });
-//                 }
-
-//                 await wallet.save();
-//             }
-
-//             await order.save();
-//             return res.status(200).json({ success: true, message: 'Product cancelled successfully' });
-//         } else {
-//             return res.status(400).json({ success: false, message: 'Invalid status for cancellation' });
-//         }
-//     } catch (error) {
-//         console.error('Error cancelling product:', error);
-//         res.status(500).json({ success: false, message: 'Server error' });
-//     }
-// };
-
-
+};
 
 
 const returnOrder = async (req, res) => {
@@ -687,35 +605,35 @@ const returnOrder = async (req, res) => {
     }
 };
 
-// const returnProduct = async (req,res)=>{
-//     try {
-//         const {orderId, productId, returnReason, reasonStatus }=req.body
+const returnProduct = async (req,res)=>{
+    try {
+        const {orderId, productId, returnReason, reasonStatus }=req.body
 
-//         if (!orderId||!returnReason||!productId) {
-//             return res.status(400).json({ success: false, message: 'Missing required fields' })
-//         }
+        if (!orderId||!returnReason||!productId) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' })
+        }
 
-//         const order=await Order.findById(orderId)
-//         if (!order) {
-//             return res.status(404).json({ success: false, message: 'Order not found' });
-//         }
+        const order=await Order.findById(orderId)
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
 
-//         const productItemIndex = order.productItems.findIndex(item => item.productId.toString() === productId);
-//         if (productItemIndex === -1) {
-//             return res.status(404).json({ success: false, message: 'Product item not found in order' });
-//         }
+        const productItemIndex = order.productItems.findIndex(item => item.productId.toString() === productId);
+        if (productItemIndex === -1) {
+            return res.status(404).json({ success: false, message: 'Product item not found in order' });
+        }
 
-//         order.productItems[productItemIndex].status = reasonStatus;
-//         order.productItems[productItemIndex].returnReason = returnReason;
+        order.productItems[productItemIndex].status = reasonStatus;
+        order.productItems[productItemIndex].returnReason = returnReason;
 
-//         await order.save();
+        await order.save();
 
-//         return res.status(200).json({ success: true, message: 'Product status and return reason updated successfully' });
+        return res.status(200).json({ success: true, message: 'Product status and return reason updated successfully' });
 
-//     } catch (error) {
-//         console.log('the error will show on the return perticular product',error)
-//     }
-// }
+    } catch (error) {
+        console.log('the error will show on the return perticular product',error)
+    }
+}
 
 
 module.exports = {
@@ -727,5 +645,5 @@ module.exports = {
     updateOrderStatus,
     returnOrder,
     cancelPerticularProduct,
-    // returnProduct
+    returnProduct
 }

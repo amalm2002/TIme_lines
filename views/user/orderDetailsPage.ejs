@@ -312,184 +312,134 @@
                         <p class="address">
                             <%= orders.userId.name %>
                         </p>
-                        <% orders.billingAddress.forEach(address=> { %>
-                            <p class="address">
-                                <%= address.street %>, <%= address.city %>
-                            </p>
-                            <p class="address">
-                                <%= address.country %>
-                            </p>
-                            <% }) %>
+                        <% orders.billingAddress.forEach(address => { %>
+                        <p class="address">
+                            <%= address.street %>, <%= address.city %>
+                        </p>
+                        <p class="address">
+                            <%= address.country %>
+                        </p>
+                        <% }) %>
                     </div>
-                    <%if(orders.status==='Delivered'){%>
-                        <button id="download-btn-invoice" class="download-btn" data-order-id="<%= orders._id %>"
-                           >
-                            Download Invoice
-                        </button>
-                        <%} %>
+                    <% if(orders.status === 'Delivered'){ %>
+                    <button id="download-btn-invoice" class="download-btn" data-order-id="<%= orders._id %>">
+                        Download Invoice
+                    </button>
+                    <% } %>
                 </header>
+                
                 <main>
                     <h1>Here's what you ordered:</h1>
                     <div class="order-header">
-                        <p>Order id: <%= orders._id %>
-                        </p>
-
-
-                        <% if(orders.status==='Pending' || orders.status==='Processing' || orders.status==='Shipping'
-                            ){%>
-                            <button class="cancel-btn" data-order-id="<%= orders._id %>"
-                                data-pro-id="">Cancel this order</button>
-                            <%}%>
+                        <p>Order id: <%= orders._id %></p>
+                        <% if(orders.status === 'Pending' || orders.status === 'Processing' || orders.status === 'Shipping'){ %>
+                        <button class="cancel-btn" data-order-id="<%= orders._id %>">Cancel this order</button>
+                        <% } %>
                     </div>
-                    <% if(orders.status==='Cancelled' ){%>
-                        <div>
-                            <p style="color: red;text-align: center; font-size: xx-large;"> order canceled</p>
-
+                    <% if(orders.status === 'Cancelled'){ %>
+                    <div>
+                        <p style="color: red;text-align: center; font-size: xx-large;">Order canceled</p>
+                    </div>
+                    <% } else if(orders.status === 'Request for returned'){ %>
+                    <p style="color: rgb(68, 0, 255);text-align: center; font-size: xx-large;">Request for return</p>
+                    <% } else if(orders.status === 'Returned'){ %>
+                    <p style="color: rgb(0, 255, 51);text-align: center; font-size: xx-large;">Returned</p>
+                    <% } else if(orders.status === 'Rejected'){ %>
+                    <p style="color: rgb(255, 0, 0);text-align: center; font-size: xx-large;">Order Rejected by admin</p>
+                    <% } else { %>
+                    <div class="order-status">
+                        <div class="status-item" data-status="Pending">
+                            <div class="status-point"></div>
+                            <span>Pending</span>
                         </div>
-                        <%} else if(orders.status==='Request for returned' ){ %>
-                            <p style="color: rgb(68, 0, 255);text-align: center; font-size: xx-large;"> Request for
-                                return</p>
-                            <%} else if(orders.status==='Returned' ){ %>
-                                <p style="color: rgb(0, 255, 51);text-align: center; font-size: xx-large;"> Returned
+                        <div class="status-item" data-status="Processing">
+                            <div class="status-point"></div>
+                            <span>Processing</span>
+                        </div>
+                        <div class="status-item" data-status="Shipping">
+                            <div class="status-point"></div>
+                            <span>Shipping</span>
+                        </div>
+                        <div class="status-item" data-status="Delivered">
+                            <div class="status-point"></div>
+                            <span>Delivered</span>
+                        </div>
+                        <div class="status-progress"></div>
+                    </div>
+                    <% } %>
+            
+                    <% if(orders.status === 'Delivered'){ %>
+                    <!-- Main return button for the entire order -->
+                    <button class="return-btn">Return this order</button>
+                    <div id="returnModal" class="order-details-modal">
+                        <div class="order-details-modal-content">
+                            <span class="order-details-close-btn">&times;</span>
+                            <h2>Return Product</h2>
+                            <form id="returnForm">
+                                <label for="returnReason">Reason for Return:</label>
+                                <textarea id="returnReason" name="returnReason" class="order-details-textarea" required></textarea>
+                                <button type="submit" class="order-details-return-submit">Submit Return</button>
+                            </form>
+                        </div>
+                    </div>
+                    <% } %>
+            
+                    <% orders.productItems.forEach(productItem => { %>
+                    <div class="order-details">
+                        <div class="item">
+                            <img src="/images/products/<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
+                            <div class="item-info">
+                                <h3><%= productItem.productName %></h3>
+                                <p>Category: <%= productItem.productId.category.name %></p>
+                                <div class="item-quantity">Qty: <%= productItem.quantity %></div>
+            
+                                <% if (productItem.offerPrice < productItem.productId.price) { %>
+                                <p class="price">
+                                    <span class="offer-price" style="color: green; font-weight: bold;">₹ <%= productItem.offerPrice %></span>
+                                    <span class="original-price" style="text-decoration: line-through; margin-left: 10px;">₹ <%= productItem.productId.price %></span>
+                                    <span class="discount-percentage" style="color: red; margin-left: 10px;">
+                                        <%= Math.round((1 - (productItem.offerPrice / productItem.productId.price)) * 100) %>% Off
+                                    </span>
                                 </p>
-                                <%} else if(orders.status==='Rejected' ){ %>
-                                    <p style="color: rgb(255, 0, 0);text-align: center; font-size: xx-large;"> Order
-                                        Rejected by admin </p>
-
-                                    <% } else{%>
-                                        <div class="order-status">
-                                            <div class="status-item" data-status="Pending">
-                                                <div class="status-point"></div>
-                                                <span>Pending</span>
-                                            </div>
-                                            <div class="status-item" data-status="Processing">
-                                                <div class="status-point"></div>
-                                                <span>Processing</span>
-                                            </div>
-                                            <div class="status-item" data-status="Shipping">
-                                                <div class="status-point"></div>
-                                                <span>Shipping</span>
-                                            </div>
-                                            <div class="status-item" data-status="Delivered">
-                                                <div class="status-point"></div>
-                                                <span>Delivered</span>
-                                            </div>
-                                            <div class="status-progress"></div>
-                                        </div>
-                                        <%} %>
-                                            <% if(orders.status==='Delivered' ){%>
-                                                <button class="return-btn">Return this order</button>
-                                                <div id="returnModal" class="order-details-modal">
-                                                    <div class="order-details-modal-content">
-                                                        <span class="order-details-close-btn">&times;</span>
-                                                        <h2>Return Product</h2>
-                                                        <form id="returnForm">
-                                                            <label for="returnReason">Reason for Return:</label>
-                                                            <textarea id="returnReason" name="returnReason"
-                                                                class="order-details-textarea" required></textarea>
-                                                            <button type="submit"
-                                                                class="order-details-return-submit">Submit
-                                                                Return</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-
-                                                <%} %>
-
-                                                    <% orders.productItems.forEach(productItem=> { %>
-                                                        <div class="order-details">
-                                                            <div class="item">
-                                                                <img src="/images/products/<%= productItem.productId.images[0] %>"
-                                                                    alt="<%= productItem.productName %>">
-                                                                <div class="item-info">
-                                                                    <h3>
-                                                                        <%= productItem.productName %>
-                                                                    </h3>
-                                                                    <p>Category: <%= productItem.productId.category.name
-                                                                            %>
-                                                                    </p>
-                                                                    <div class="item-quantity">Qty: <%=
-                                                                            productItem.quantity %>
-                                                                    </div>
-
-                                                                    <% if (productItem.offerPrice <
-                                                                        productItem.productId.price) { %>
-                                                                        <p class="price">
-                                                                            <span class="offer-price"
-                                                                                style="color: green; font-weight: bold;">₹
-                                                                                <%= productItem.offerPrice %>
-                                                                            </span>
-                                                                            <span class="original-price"
-                                                                                style="text-decoration: line-through; margin-left: 10px;">₹
-                                                                                <%= productItem.productId.price %>
-                                                                            </span>
-                                                                            <span class="discount-percentage"
-                                                                                style="color: red; margin-left: 10px;">
-                                                                                <%= Math.round((1 -
-                                                                                    (productItem.offerPrice /
-                                                                                    productItem.productId.price)) * 100)
-                                                                                    %>% Off
-                                                                            </span>
-                                                                        </p>
-                                                                        <% } else { %>
-                                                                            <p class="price">₹<%=
-                                                                                    productItem.productId.price %>
-                                                                            </p>
-                                                                            <% } %>
-                                                                                <% if (productItem.status==='Cancelled') { %>
-                                                                                    <p
-                                                                                        style="color: red; font-weight: bold;">
-                                                                                        This product has been cancelled
-                                                                                        by you.</p>
-                                                                                    <% } else if ( orders.productItems.length>1 && orders.status
-                                                                                        !=='Cancelled' &&
-                                                                                        (orders.status==='Pending' ||
-                                                                                        orders.status==='Processing' ||
-                                                                                        orders.status==='Shipping' )) {
-                                                                                        %>
-                                                                                        <button class="cancel-pro-btn"
-                                                                                            data-perticularOrder-id="<%= orders._id %>"
-                                                                                            data-perticulrPro-id="<%= productItem.productId._id %>">
-                                                                                            Cancel
-                                                                                        </button>
-                                                                                        <% } %>
-                                                                                            <!-- <button
-                                                                                                class="return-pro-btn"
-                                                                                                data-perticularOrder-id="<%= orders._id %>"
-                                                                                                data-perticulrPro-id="<%= productItem.productId._id %>">
-                                                                                                Return this product
-                                                                                            </button>
-                                                                                            <div id="returnProModal"
-                                                                                                class="order-details-modal">
-                                                                                                <div
-                                                                                                    class="order-details-modal-content">
-                                                                                                    <span
-                                                                                                        class="order-details-close-btn">&times;</span>
-                                                                                                    <h2>Return Product
-                                                                                                    </h2>
-                                                                                                    <form
-                                                                                                        id="returnProForm">
-                                                                                                        <label
-                                                                                                            for="returnReason">Reason
-                                                                                                            for
-                                                                                                            Return:</label>
-                                                                                                        <textarea
-                                                                                                            id="returnProReason"
-                                                                                                            name="returnReason"
-                                                                                                            class="order-details-textarea"
-                                                                                                            required></textarea>
-                                                                                                        <button
-                                                                                                            type="submit"
-                                                                                                            class="order-details-return-submit">Submit
-                                                                                                            Return</button>
-                                                                                                    </form>
-                                                                                                </div>
-                                                                                            </div> -->
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <% }) %>
+                                <% } else { %>
+                                <p class="price">₹<%= productItem.productId.price %></p>
+                                <% } %>
+            
+                                <% if (productItem.status === 'Cancelled') { %>
+                                <p style="color: red; font-weight: bold;">This product has been cancelled by you.</p>
+                                <% } else if (orders.productItems.length > 1 && orders.status !== 'Cancelled' && (orders.status === 'Pending' || orders.status === 'Processing' || orders.status === 'Shipping')) { %>
+                                <button class="cancel-pro-btn" data-perticularOrder-id="<%= orders._id %>" data-perticulrPro-id="<%= productItem.productId._id %>">Cancel</button>
+                                <% } %>
+            
+                                <% if (orders.status === 'Delivered' && productItem.status !== 'Returned' && productItem.status !== 'Request for returned') { %>
+                                <button class="return-pro-btn" data-perticularOrder-id="<%= orders._id %>" data-perticulrPro-id="<%= productItem.productId._id %>">Return this product</button>
+                                <div id="returnProModal" class="order-details-modal">
+                                    <div class="order-details-modal-content">
+                                        <span class="order-details-close-btn">&times;</span>
+                                        <h2>Return Product</h2>
+                                        <form id="returnProForm">
+                                            <label for="returnProReason">Reason for Return:</label>
+                                            <textarea id="returnProReason" name="returnReason" class="order-details-textarea" required></textarea>
+                                            <button type="submit" class="order-details-return-submit">Submit Return</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <% } %>
+            
+                                <% if (productItem.status === 'Request for returned') { %>
+                                <p style="color: rgb(68, 0, 255);text-align: center; font-size: xx-large;">Request for return</p>
+                                <% } else if (productItem.status === 'Returned') { %>
+                                <p style="color: rgb(0, 255, 51);text-align: center; font-size: xx-large;">Returned</p>
+                                <% } else if (productItem.status === 'Rejected') { %>
+                                <p style="color: rgb(255, 0, 0);text-align: center; font-size: xx-large;">Order Rejected by admin</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                </main>
             </div>
+            
 
             <div class="order-total">
 
@@ -724,73 +674,74 @@
                         });
                     });
                 });
-                // document.querySelectorAll('.return-pro-btn').forEach(button => {
-                //     button.addEventListener('click', function () {
-                //         const orderId = this.getAttribute('data-perticularOrder-id');
-                //         const productId = this.getAttribute('data-perticulrPro-id');
+                document.querySelectorAll('.return-pro-btn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const orderId = this.getAttribute('data-perticularOrder-id');
+                        const productId = this.getAttribute('data-perticulrPro-id');
+                        const reasonStatus= 'Request for returned'
 
-                //         const returnModal = document.getElementById('returnProModal');
-                //         const closeModalBtn = returnModal.querySelector('.order-details-close-btn');
-                //         const returnForm = returnModal.querySelector('#returnProForm');
+                        const returnModal = document.getElementById('returnProModal');
+                        const closeModalBtn = returnModal.querySelector('.order-details-close-btn');
+                        const returnForm = returnModal.querySelector('#returnProForm');
 
 
-                //         returnModal.style.display = 'block';
+                        returnModal.style.display = 'block';
 
-                //         closeModalBtn.addEventListener('click', () => {
-                //             returnModal.style.display = 'none';
-                //         });
+                        closeModalBtn.addEventListener('click', () => {
+                            returnModal.style.display = 'none';
+                        });
 
-                //         returnForm.addEventListener('submit', async function (event) {
-                //             event.preventDefault();
-                //             const returnReason = document.getElementById('returnProReason').value;
+                        returnForm.addEventListener('submit', async function (event) {
+                            event.preventDefault();
+                            const returnReason = document.getElementById('returnProReason').value;
 
-                //             console.log(returnReason,"______________________");
+                            console.log(returnReason,"______________________");
                             
 
-                //             try {
-                //                 const response = await fetch('/returnProduct', {
-                //                     method: 'POST',
-                //                     headers: {
-                //                         'Content-Type': 'application/json'
-                //                     },
-                //                     body: JSON.stringify({ orderId, productId, returnReason })
-                //                 });
+                            try {
+                                const response = await fetch('/returnProduct', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ orderId, productId, returnReason ,reasonStatus })
+                                });
 
-                //                 const result = await response.json();
+                                const result = await response.json();
 
-                //                 if (response.ok && result.success) {
-                //                     Swal.fire(
-                //                         'Returned!',
-                //                         'The product has been returned successfully.',
-                //                         'success'
-                //                     ).then(() => {
-                //                         returnModal.style.display = 'none';
-                //                     });
-                //                 } else {
-                //                     Swal.fire(
-                //                         'Failed!',
-                //                         'Failed to return the product: ' + result.message,
-                //                         'error'
-                //                     );
-                //                 }
-                //             } catch (error) {
-                //                 console.error('Error:', error);
-                //                 Swal.fire(
-                //                     'Error!',
-                //                     'An error occurred. Please try again.',
-                //                     'error'
-                //                 );
-                //             }
-                //         });
-                //     });
-                // });
+                                if (response.ok && result.success) {
+                                    Swal.fire(
+                                        'Returned!',
+                                        'The product has been returned successfully.',
+                                        'success'
+                                    ).then(() => {
+                                        returnModal.style.display = 'none';
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        'Failed!',
+                                        'Failed to return the product: ' + result.message,
+                                        'error'
+                                    );
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                Swal.fire(
+                                    'Error!',
+                                    'An error occurred. Please try again.',
+                                    'error'
+                                );
+                            }
+                        });
+                    });
+                });
 
-                // window.addEventListener('click', function (event) {
-                //     const returnModal = document.getElementById('returnProModal');
-                //     if (event.target == returnModal) {
-                //         returnModal.style.display = 'none';
-                //     }
-                // });
+                window.addEventListener('click', function (event) {
+                    const returnModal = document.getElementById('returnProModal');
+                    if (event.target == returnModal) {
+                        returnModal.style.display = 'none';
+                    }
+                });
 
 
 

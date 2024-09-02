@@ -186,15 +186,6 @@
     </style>
     <!-- Begin Page Content -->
     <div class="container-fluid">
-
-        <!-- Page Heading -->
-        <!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-                    </div> -->
-
-
         <!-- Generate Report Button -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
@@ -257,35 +248,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <h2>Order Statistics Chart</h2>
-        <div>
-            <label for="time-period">Select Time Period:</label>
-            <select id="time-period">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-                <option value="custom">Custom Date Range</option>
-            </select>
-        
-            <label for="filter-type">Select Filter:</label>
-            <select id="filter-type">
-                <option value="orders">Order Count</option>
-                <option value="sales">Sales Amount</option>
-            </select>
-        
-            <div id="custom-date-range" style="display: none;">
-                <label for="start-date">Start Date:</label>
-                <input type="date" id="start-date">
-                
-                <label for="end-date">End Date:</label>
-                <input type="date" id="end-date">
-            </div>
-        
-            <button id="update-chart">Update Chart</button>
-        </div> -->
-
         <div class="chart-controls">
             <h2>Order Statistics Chart</h2>
             <div class="control-group">
@@ -323,8 +285,18 @@
 
             <button id="update-chart" class="update-btn">Update Chart</button>
         </div>
+        
 
         <canvas id="ordersChart" width="200" height="100"></canvas>
+
+        <div class="chart-controls">
+            <h2>Profit Over Time</h2>
+            <button id="update-profit-chart">Update Profit Chart</button>
+        </div>
+        
+        <!-- Profit Chart -->
+        <canvas id="profitChart" width="400" height="200"></canvas>
+
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -555,14 +527,6 @@
                     }
                 }
 
-                // document.getElementById('time-period').addEventListener('change', (e) => {
-                //     if (e.target.value === 'custom') {
-                //         document.getElementById('custom-date-range').style.display = 'block';
-                //     } else {
-                //         document.getElementById('custom-date-range').style.display = 'none';
-                //     }
-                // });
-
                 document.getElementById('time-period').addEventListener('change', function () {
                     var customDateRange = document.getElementById('custom-date-range');
                     customDateRange.style.display = this.value === 'custom' ? 'flex' : 'none';
@@ -583,6 +547,68 @@
         </script>
 
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Profit Chart context
+        const ctxProfit = document.getElementById('profitChart').getContext('2d');
+        let profitChart;
+
+        // Function to fetch and render profit chart
+        async function fetchAndRenderProfitChart(period, startDate = '', endDate = '') {
+            try {
+                let url = `/admin/orderProfitChart?period=${period}`;
+                if (period === 'custom') {
+                    url += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+
+                const response = await fetch(url);
+                const profitData = await response.json();
+
+                if (profitChart) {
+                    profitChart.destroy();
+                }
+
+                const labels = profitData.map(item => item.date);
+                const profitValues = profitData.map(item => item.profit);
+
+                profitChart = new Chart(ctxProfit, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Profit (${period})`,
+                            data: profitValues,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching profit chart data: ", error);
+            }
+        }
+
+        // Event listener to update the profit chart based on period selection
+        document.getElementById('update-profit-chart').addEventListener('click', () => {
+            const period = document.getElementById('time-period').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            fetchAndRenderProfitChart(period, startDate, endDate);
+        });
+
+        // Initial profit chart load
+        fetchAndRenderProfitChart('daily');
+    });
+</script>
 
         </body>
 

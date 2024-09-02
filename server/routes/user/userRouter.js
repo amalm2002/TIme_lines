@@ -45,8 +45,8 @@ route.put('/newPassword',middleware.forwardAuthenticated,forgotPasswordControlle
 route.get('/productDetails/:id',middleware.ensureAuthenticated,userController.productDetails)
 
 //category
-route.get('/productPage',userController.productListPage)
-route.post('/productPage',userController.filterProducts)
+route.get('/productPage',middleware.ensureAuthenticated,userController.productListPage)
+route.post('/productPage',middleware.ensureAuthenticated,userController.filterProducts)
 
 //user profile
 route.get('/userProfile',userProfileController.userProfile)
@@ -87,7 +87,7 @@ route.get('/orderListPage',middleware.ensureAuthenticated,orderController.orderL
 route.get('/orderDetails/:orderId',middleware.ensureAuthenticated,orderDetailsController.orderDetailsPage)
 route.post('/updateOrderStatus', middleware.ensureAuthenticated, orderController.updateOrderStatus);
 route.post('/orderReturn',middleware.ensureAuthenticated,orderController.returnOrder)
-// route.post('/returnProduct',middleware.ensureAuthenticated,orderController.returnProduct)
+route.post('/returnProduct',middleware.ensureAuthenticated,orderController.returnProduct)
 
 //canncle each product
 route.post('/cancelProduct',middleware.ensureAuthenticated,orderController.cancelPerticularProduct)

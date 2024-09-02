@@ -11,7 +11,6 @@ const orderPage = async (req, res) => {
             console.log('orders not found', orders);
             return res.status(404).json({ error: 'orders not found' })
         }
-        // console.log("here is the orders >>>>>>>>>>>>>>>>>>>>>",orders);
         res.render('admin/orderListAdmin', { orders })
     } catch (error) {
         console.error('the error will show on the order page :', error)
@@ -65,9 +64,28 @@ const orderStatus = async (req, res) => {
     }
 };
 
+const orderViewPage = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await Order.findOne({ _id: orderId })
+            .populate('productItems.productId');
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Pass the order data to the EJS template
+        res.render('admin/orderViewPage', { order });
+        
+    } catch (error) {
+        console.error('error on the order view page:', error);
+        res.status(500).json({ error: 'server error' });
+    }
+};
+
 
 
 module.exports = {
     orderPage,
     orderStatus,
+    orderViewPage
 }

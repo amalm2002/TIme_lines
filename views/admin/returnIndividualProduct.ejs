@@ -159,7 +159,7 @@
             <h1>Returned Orders</h1>
         </header>
         <main class="returned-orders-container">
-            <% if (order && order.status === 'Request for returned') { %>
+            <% if (productItem) { %>
                 <div class="order-summary">
                     <h1>Order Details</h1>
                     <div class="user-info">
@@ -169,7 +169,7 @@
                         </p>
                     </div>
                     <div class="order-info">
-                        <p class="total-quantity">Total Quantity: <%= order.productItems.reduce((total, item) => total + item.quantity, 0) %></p>
+                        <p class="total-quantity">Total Quantity: <%= order.totalQuantity %></p>
                         <p class="total-amount">Total Amount: ₹<%= order.totalPrice %></p>
                         <p class="paymentMethod">Payment Method: <%= order.paymentMethod %></p>
                         <p class="date-ordered">Date Ordered: <%= new Date(order.dateOrdered).toLocaleDateString() %></p>
@@ -178,49 +178,47 @@
         
                 <!-- Display product-specific details -->
                 <div class="returned-products">
-                    <h2>Returned Products</h2>
-                    <% order.productItems.forEach(item => { %>
-                        <% if(item.status!=='Cancelled'){%>
-                        <div class="order-card">
-                            <div class="product-image">
-                                <!-- Display product image -->
-                                <% if (item.productId && item.productId.images[0]) { %>
-                                    <img src="/images/products/<%= item.productId.images[0] %>" alt="<%= item.productName %>">
-                                <% } else { %>
-                                    <p>No image available</p>
-                                <% } %>
+                    <h2>Returned Product</h2>
+                    <div class="order-card">
+                        <div class="product-image">
+                            <% if (productItem.productId.images && productItem.productId.images.length > 0) { %>
+                                <img src="/images/products/<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
+                            <% } else { %>
+                                <p>No image available</p>
+                            <% } %>
+                        </div>
+                        <div class="order-details">
+                            <div class="product-info">
+                                <h3><%= productItem.productName %></h3>
+                                <p class="price">₹<%= productItem.total %></p>
+                                <p class="quantity">Quantity: <%= productItem.quantity %></p>
                             </div>
-                            <div class="order-details">
-                                <div class="product-info">
-                                    <h3><%= item.productName %></h3>
-                                    <p class="price">₹<%= item.total %></p>
-                                    <p class="quantity">Quantity: <%= item.quantity %></p>
-                                </div>
-                                <div class="return-reason">
-                                    <label for="reason">Return Reason:
-                                        <p style="font-weight: 300;"><%= item.returnReason %></p>
-                                    </label>
-                                </div>
+                            <div class="return-reason">
+                                <label for="reason">Return Reason:
+                                    <p style="font-weight: 300;"><%= productItem.returnReason %></p>
+                                </label>
                             </div>
                         </div>
-                        <%}%>
-                    <% }) %>
+                    </div>
                 </div>
         
-                <!-- Display action buttons for the whole order -->
+                <!-- Display action buttons for the specific product -->
                 <div class="action-buttons">
-                    <button class="accept" id="acceptBtn" data-order-id="<%= order._id %>">Accept All</button>
-                    <button class="reject" id="rejectBtn" data-order-id="<%= order._id %>">Reject All</button>
+                    <button class="accept" id="acceptBtn" data-order-id="<%= order._id %>" data-product-id="<%= productItem.productId._id %>">Accept</button>
+                    <button class="reject" id="rejectBtn" data-order-id="<%= order._id %>" data-product-id="<%= productItem.productId._id %>">Reject</button>
                 </div>
             <% } else { %>
-                <p>No orders with return requests found.</p>
+                <p>No product with return request found.</p>
             <% } %>
-        </main>  
+        </main>
+        
+        
         
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
 
@@ -228,11 +226,11 @@
                 document.querySelectorAll('.accept').forEach(button => {
                     button.addEventListener('click', async function () {
                         const orderId = this.getAttribute('data-order-id');
-                        const productId = this.getAttribute('data-pro-id');
+                        const productId = this.getAttribute('data-product-id');
                         const reasonAcceptStatus = 'Returned';
 
                         try {
-                            const response = await fetch('/admin/updateRetrunStatus', {
+                            const response = await fetch('/admin/RetrunProductStatus', {
                                 method: 'post',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -273,11 +271,11 @@
                 document.querySelectorAll('.reject').forEach(rejectButton => {
                     rejectButton.addEventListener('click', async function () {
                         const orderId = this.getAttribute('data-order-id');
-                        const productId = this.getAttribute('data-pro-id');
+                        const productId = this.getAttribute('data-product-id');
                         const reasonRejectedStatus = 'Rejected';
 
                         try {
-                            const response = await fetch('/admin/rejectRetrunStatus', {
+                            const response = await fetch('/admin/rejectRetrunProductStatus', {
                                 method: 'post',
                                 headers: {
                                     'Content-Type': 'application/json'

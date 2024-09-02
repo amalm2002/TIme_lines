@@ -229,9 +229,75 @@ const getTopSellingProducts = async () => {
     }
 }
 
+const dashboardProfitChart = async (req, res) => {
+    try {
+        let startDate, endDate;
+        const period = req.query.period || 'daily';
+        const { startDate: customStartDate, endDate: customEndDate } = req.query;
+    
+        if (period === 'custom') {
+            startDate = new Date(customStartDate);
+            endDate = new Date(customEndDate);
+        } else if (period === 'daily') {
+            startDate = new Date();
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date();
+            endDate.setHours(23, 59, 59, 999);
+        } else if (period === 'weekly') {
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - startDate.getDay());
+            endDate = new Date();
+            endDate.setDate(startDate.getDate() + 6);
+            endDate.setHours(23, 59, 59, 999);
+        } else if (period === 'monthly') {
+            startDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            endDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
+        } else if (period === 'yearly') {
+            startDate = new Date(new Date().getFullYear(), 0, 1);
+            endDate = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59, 999);
+        }
+    
+        const orders = await Order.aggregate([
+            {
+                $match: {
+                    dateOrdered: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $unwind: '$productItems'
+            },
+            {
+                $group: {
+                    _id: {
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$dateOrdered" } }
+                    },
+                    totalAmount: { $sum: "$totalPrice" },
+                    totalCost: { $sum: { $multiply: ["$productItems.quantity", "$productItems.costPrice"] } },
+                }
+            },
+            {
+                $project: {
+                    date: "$_id.date",
+                    profit: { $subtract: ["$totalAmount", "$totalCost"] },
+                    _id: 0
+                }
+            },
+            {
+                $sort: { date: 1 }
+            }
+        ]);
+    
+        res.json(orders);
+    } catch (error) {
+        console.error("Error retrieving orders for chart:", error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
 
 
 module.exports = {
     dashboardChart,
-    getTopSellingProducts
+    getTopSellingProducts,
+    dashboardProfitChart
 };

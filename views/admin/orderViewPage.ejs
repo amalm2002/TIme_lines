@@ -1,0 +1,285 @@
+<%- include('../layout/admin/header') %>
+    <style>
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #2c3e50;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .product-details {
+            display: flex;
+            align-items: center;
+        }
+
+        .product-info {
+            margin-left: 10px;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                margin-bottom: 15px;
+                border-bottom: 2px solid #ddd;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+            }
+
+            td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: bold;
+                text-align: left;
+            }
+
+            .product-details {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .product-image {
+                margin-bottom: 10px;
+            }
+
+            .product-info {
+                margin-left: 0;
+                text-align: right;
+            }
+        }
+    </style>
+
+    <body>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Order Details</h2>
+            </div>
+            <div class="card-content">
+                <div class="grid">
+                    <div>
+                        <p><strong>Order ID:</strong>
+                            <%= order._id %>
+                        </p>
+                        <p><strong>User Name:</strong>
+                            <%= order.userName %>
+                        </p>
+                        <p><strong>Date Ordered:</strong>
+                            <%= new Date(order.dateOrdered).toLocaleString() %>
+                        </p>
+                    </div>
+                    <div>
+                        <p><strong>Total Quantity:</strong>
+                            <%= order.totalQuantity %>
+                        </p>
+                        <p><strong>Original Price:</strong> ₹<%= order.originalPrice.toLocaleString() %>
+                        </p>
+                        <p><strong>Discount:</strong> ₹<%= order.discount.toLocaleString() %>
+                        </p>
+                        <p><strong>Coupon Discount:</strong> ₹<%= order.couponDiscount.toLocaleString() %>
+                        </p>
+                        <p><strong>Total Price:</strong> ₹<%= order.totalPrice.toLocaleString() %>
+                        </p>
+                    </div>
+                </div>
+                <div class="grid" style="margin-top: 15px;">
+                    <div>
+                        <p><strong>Payment Method:</strong>
+                            <%= order.paymentMethod %>
+                        </p>
+                        <p><strong>Payment Status:</strong>
+                            <span class="badge badge-<%= order.paymentStatus === 'Paid' ? 'success' : 'danger' %>">
+                                <%= order.paymentStatus %>
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <p><strong>Order Status:</strong>
+                            <span class="badge badge-<%= order.status === 'Delivered' ? 'success' : 'warning' %>">
+                                <%= order.status %>
+                            </span>
+                        </p>
+                        <p><strong>Return Reason:</strong>
+                            <%= order.returnReason %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Product Items</h2>
+            </div>
+            <div class="card-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Original Price</th>
+                            <th>Offer Price</th>
+                            <th>Status</th>
+                            <th>Return Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% order.productItems.forEach(item=> { %>
+                            <tr>
+                                <td data-label="Product">
+                                    <div class="product-details">
+                                        <img src="/images/products/<%= item.productId.images[0] %>"
+                                            alt="<%= item.productName %>" class="product-image">
+                                        <div class="product-info">
+                                            <%= item.productName %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Quantity">
+                                    <%= item.quantity %>
+                                </td>
+                                <td data-label="Original Price">₹<%= item.total.toLocaleString() %>
+                                </td>
+                                <td data-label="Offer Price">₹<%= item.offerPrice.toLocaleString() %>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge badge-<%= item.status === 'Rejected' ? 'danger' : 'warning' %>">
+                                        <%= item.status %>
+                                    </span>
+                                </td>
+                                <td data-label="Return Reason">
+                                    <%= item.returnReason %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Billing Address</h2>
+            </div>
+            <div class="card-content">
+                <% if (order.billingAddress.length> 0) { %>
+                    <p><strong>Street:</strong>
+                        <%= order.billingAddress[0].street %>
+                    </p>
+                    <p><strong>City:</strong>
+                        <%= order.billingAddress[0].city %>
+                    </p>
+                    <p><strong>Country:</strong>
+                        <%= order.billingAddress[0].country %>
+                    </p>
+                    <% } else { %>
+                        <p>No billing address available.</p>
+                        <% } %>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+
+    </html>
