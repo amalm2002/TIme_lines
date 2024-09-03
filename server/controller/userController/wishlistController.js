@@ -11,8 +11,9 @@ const wishlistPage = async (req, res) => {
         const wishlist = await Wishlist.findOne({ userId }).populate('products');
         
 
-        if (!wishlist) {
-            return res.status(404).json({ success: false, message: 'Wishlist not found' });
+       if (!wishlist) {
+            console.log("hhhhhhhhhhhhhhhhhh");
+            return res.render('user/wishlistPage', { user,wishlist:[] });
         }
 
         res.render('user/wishlistPage', { user,wishlist:wishlist.products });
@@ -33,7 +34,7 @@ const wishlistPage = async (req, res) => {
             // console.log('here is the userId -------------------------------->',userId);
     
             let wishlist = await Wishlist.findOne({ userId });
-            console.log('wishlist,',wishlist);
+            // console.log('wishlist,',wishlist);
     
             if (!wishlist) {
                 wishlist = new Wishlist({ userId, products: [] });
