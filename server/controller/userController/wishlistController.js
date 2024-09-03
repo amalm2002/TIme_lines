@@ -12,12 +12,12 @@ const wishlistPage = async (req, res) => {
         
 
        if (!wishlist) {
-            console.log("hhhhhhhhhhhhhhhhhh");
+            // console.log("hhhhhhhhhhhhhhhhhh");
             return res.render('user/wishlistPage', { user,wishlist:[] });
         }
 
         res.render('user/wishlistPage', { user,wishlist:wishlist.products });
-        console.log("here is the wishlist ========================:",wishlist,user);
+        // console.log("here is the wishlist ========================:",wishlist,user);
     } catch (error) {
         console.error('Error fetching wishlist:', error);
         res.status(500).json({ error: 'Server error' });
