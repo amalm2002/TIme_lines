@@ -146,7 +146,8 @@ const verifyOTP = async (req, res) => {
                 await newUser.save();
 
                 // Update the new user with the referral link
-                const referralLink = `http://localhost:4000/register?userId=${newUser._id}`;
+                // const referralLink = `http://localhost:4000/register?userId=${newUser._id}`;
+                const referralLink = `https://timeslines.shop/register?userId=${newUser._id}`;
                 await User.findByIdAndUpdate(newUser._id, { referredBy: referralLink });
 
                 req.session.user = newUser.toObject();

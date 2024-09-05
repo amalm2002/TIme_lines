@@ -33,7 +33,8 @@ const userProfile = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const referralLink = `http://localhost:4000/register?userId=${user._id}`;
+        // const referralLink = `http://localhost:4000/register?userId=${user._id}`;
+        const referralLink = `https://timeslines.shop/register?userId=${user._id}`;
 
         res.render('user/userProfile', { user, referralLink });
     } catch (error) {

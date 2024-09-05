@@ -76,6 +76,8 @@ const addCopon = async (req, res) => {
         console.log('newCoupon:', newCoupon);
 
         await newCoupon.save();
+        console.log(newCoupon,"++++++++++++++++++++++++++++");
+        
         res.json({ success: true, message: 'Coupon added successfully.' });
 
     } catch (error) {
