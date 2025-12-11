@@ -256,17 +256,7 @@
                     const orderId = this.getAttribute('data-order-id')
                     const totalPriceInRupees = '<%= orders.totalPrice %>'
 
-                    console.log("______________________________________________");
-                    console.log("totalPriceInRupees", totalPriceInRupees);
-                    console.log(orderId);
-
-                    console.log("______________________________________________");
-
-
                     const amount = parseFloat(totalPriceInRupees) * 100;
-                    console.log("_________________________________________________________");
-                    console.log(amount);
-                    console.log("__________________________________________________________");
 
                     fetch('/retry-payment',{
                         method:"post",
