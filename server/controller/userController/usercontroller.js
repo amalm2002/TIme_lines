@@ -67,7 +67,7 @@ const productDetails = async (req, res) => {
         if (!product || (product.category && product.category.status !== 'Active')) {
             return res.status(404).render('user/productDetails', {
                 error: 'Product not found or category is not active',
-                products: null, 
+                products: null,
                 relatedProducts: [],
                 user: userId ? await User.findById(userId) : null,
                 wishlistProducts: [],
@@ -77,7 +77,7 @@ const productDetails = async (req, res) => {
 
         const relatedProducts = await Product.find({
             _id: { $ne: productId },
-            category: product.category._id 
+            category: product.category._id
         }).limit(4);
 
         let wishlistProducts = [];
@@ -106,7 +106,7 @@ const productDetails = async (req, res) => {
         console.error("Error fetching product details:", error);
         res.status(500).render('user/productDetails', {
             error: 'Server error',
-            products: null, 
+            products: null,
             relatedProducts: [],
             user: userId ? await User.findById(userId) : null,
             wishlistProducts: [],
@@ -117,63 +117,148 @@ const productDetails = async (req, res) => {
 
 
 
+// const productListPage = async (req, res) => {
+//     try {
+//         const userId = req.session.user ? req.session.user._id : req.session.userNotAuthenticated?.id;
+//         const user = await User.findOne({ _id: userId })
+//         const category = await Category.find({ status: 'Active' });
+//         const products = await Product.aggregate([{
+//             $lookup: {
+//                 from: 'categories',
+//                 localField: 'category',
+//                 foreignField: '_id',
+//                 as: 'categoryDetails'
+//             }
+//         },
+//         {
+//             $unwind: '$categoryDetails'
+//         },
+//         {
+//             $match: {
+//                 'status': 'Active',
+//                 'categoryDetails.status': 'Active'
+//             }
+//         }
+//         ]);
+//         const brand = await Brand.find();
+
+//         const searchQuery = req.query.search || '';
+//         const selectCategories = req.query.categories ? req.query.categories.split(',') : [];
+//         const selectBrand = req.query.brands ? req.query.brands.split(',') : [];
+
+//         let filterProducts = products.filter(pro => {
+//             const matchSearch = pro.name.toLowerCase().includes(searchQuery.toLowerCase());
+//             const matchCategories = selectCategories.length === 0 || selectCategories.includes(pro.category.toString());
+//             const matchBrand = selectBrand.length === 0 || selectBrand.includes(pro.brand.toString());
+
+//             return matchSearch && matchCategories && matchBrand;
+//         });
+
+//         let wishlistProducts = [];
+//         if (userId) {
+//             const wishlist = await Wishlist.findOne({ userId }).populate('products');
+//             if (wishlist) {
+//                 wishlistProducts = wishlist.products.map(product => product._id.toString());
+//             }
+//         }
+
+//         const currentDate = new Date();
+//         const categoryOffers = await CategoryOffer.find({ endDate: { $gte: currentDate } })
+//             .populate('categoryId');
+
+//         const categoryOffer = categoryOffers.length > 0 ? categoryOffers[0] : null;
+
+//         res.render('user/productPage', { user: user, products: filterProducts, category, brand, searchQuery, selectBrand, selectCategories, wishlistProducts, categoryOffer });
+//     } catch (error) {
+//         console.error('The error is shown on productListPage controller:', error);
+//     }
+// };
+
+// userController.js
+const ITEMS_PER_PAGE = 6;
+
 const productListPage = async (req, res) => {
     try {
-        const userId = req.session.user ? req.session.user._id : req.session.userNotAuthenticated?.id;
-        const user = await User.findOne({ _id: userId })
-        const category = await Category.find({ status: 'Active' });
-        // const products = await Product.find({ status: 'Active' });
-        const products = await Product.aggregate([{
-            $lookup: {
-                from: 'categories',
-                localField: 'category',
-                foreignField: '_id',
-                as: 'categoryDetails'
-            }
-        },
-        {
-            $unwind: '$categoryDetails'
-        },
-        {
-            $match: {
-                'status': 'Active',
-                'categoryDetails.status': 'Active'
-            }
-        }
-        ]);
-        const brand = await Brand.find();
+        const userId = req.session.user?._id || req.session.userNotAuthenticated?.id;
+        const user = userId ? await User.findById(userId) : null;
 
+        const page = parseInt(req.query.page) || 1;               // current page
         const searchQuery = req.query.search || '';
         const selectCategories = req.query.categories ? req.query.categories.split(',') : [];
         const selectBrand = req.query.brands ? req.query.brands.split(',') : [];
 
-        let filterProducts = products.filter(pro => {
+        let products = await Product.aggregate([
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'category',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
+                }
+            },
+            { $unwind: '$categoryDetails' },
+            {
+                $match: {
+                    status: 'Active',
+                    'categoryDetails.status': 'Active'
+                }
+            }
+        ]);
+
+        let filteredProducts = products.filter(pro => {
             const matchSearch = pro.name.toLowerCase().includes(searchQuery.toLowerCase());
             const matchCategories = selectCategories.length === 0 || selectCategories.includes(pro.category.toString());
             const matchBrand = selectBrand.length === 0 || selectBrand.includes(pro.brand.toString());
-
             return matchSearch && matchCategories && matchBrand;
         });
+
+        const totalProducts = filteredProducts.length;
+        const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+
+        const paginatedProducts = filteredProducts
+            .slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
         let wishlistProducts = [];
         if (userId) {
             const wishlist = await Wishlist.findOne({ userId }).populate('products');
             if (wishlist) {
-                wishlistProducts = wishlist.products.map(product => product._id.toString());
+                wishlistProducts = wishlist.products.map(p => p._id.toString());
             }
         }
 
         const currentDate = new Date();
         const categoryOffers = await CategoryOffer.find({ endDate: { $gte: currentDate } })
             .populate('categoryId');
-
         const categoryOffer = categoryOffers.length > 0 ? categoryOffers[0] : null;
 
-        res.render('user/productPage', { user: user, products: filterProducts, category, brand, searchQuery, selectBrand, selectCategories, wishlistProducts, categoryOffer });
+        res.render('user/productPage', {
+            user,
+            products: paginatedProducts,          
+            category: await Category.find({ status: 'Active' }),
+            brand: await Brand.find(),
+            wishlistProducts,
+            categoryOffer,
+
+            currentPage: page,
+            totalPages,
+            totalProducts,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+            nextPage: page + 1,
+            prevPage: page - 1,
+            lastPage: totalPages,
+
+            searchQuery,
+            selectCategories,
+            selectBrand
+        });
+
     } catch (error) {
-        console.error('The error is shown on productListPage controller:', error);
+        console.error('Error in productListPage:', error);
+        res.status(500).send('Server Error');
     }
 };
+
 
 const filterProducts = async (req, res) => {
     try {

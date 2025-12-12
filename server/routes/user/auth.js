@@ -3,34 +3,6 @@ const passport = require('passport')
 const userDB = require('../../model/user/userModel');
 const User = require('../../model/user/userModel');
 route.get('/login/success', (req, res) => {
-    // if (req.user) {
-    //     try {
-    //         // console.log(req.user);
-    //         const { displayName: name, photos, emails, id: googleId,conformpassword } = req.user;
-    //         const photo = photos && photos.length > 0 ? photos[0].value : null;
-    //         const email = emails && emails.length > 0 ? emails[0].value : null;
-      
-    //           const User= new userDB({
-    //               name,
-    //               email,
-    //               photo,
-    //               googleId,conformpassword
-    //           });
-    //          User.save()
-    //          req.session.user={
-    //           _id:User._id,
-    //           name:User.name,
-    //           email:User.email,
-    //          }         
-    //        res.redirect('/')
-    //     } catch (error) {
-    //         console.log(error );
-    //     }
-       
-
-    // } else {
-    //     res.status(403).json({ error: true, message: "Not Autherized" })
-    // }
   if (req.user) {
         const { displayName: name, photos, emails, id: googleId } = req.user;
         const photo = photos && photos.length > 0 ? photos[0].value : null;
