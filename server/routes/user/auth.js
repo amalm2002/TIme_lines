@@ -53,6 +53,7 @@ route.get('/google/callback', passport.authenticate('google',
     }
 ))
 
+console.log(process.env.CLIENT_URL,'===========')
 
 route.get('/logout', (req, res) => {
     req.logOut()
