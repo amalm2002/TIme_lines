@@ -118,7 +118,15 @@ const signUp = async (req, res) => {
 
         console.log("email is:", email)
 
-        await sendOtp(email);
+        // await sendOtp(email);
+
+        const otpResult = await sendOtp(email);
+
+        if (!otpResult?.success) {
+            return res.status(500).json({
+                errorMessage: "OTP could not be sent. Please try again."
+            });
+        }
 
         return res.status(200).json({ message: "OTP sent,redirecting...", redirectUrl: '/otpPage' })
 
@@ -155,7 +163,7 @@ const verifyOTP = async (req, res) => {
                 const referralUser = req.session.refferalUser;
 
                 if (mongoose.Types.ObjectId.isValid(referralUser)) {
-                    await giveReward(referralUser);  
+                    await giveReward(referralUser);
                 }
 
                 return res.status(200).json({ message: "OTP verified successfully" });

@@ -110,37 +110,37 @@
             errorElement.innerText = message;
         }
 
-        document.getElementById('signInForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            clearErrors(document.getElementById('signInErrorMessage'));
+        // document.getElementById('signInForm').addEventListener('submit', async (event) => {
+        //     event.preventDefault();
+        //     clearErrors(document.getElementById('signInErrorMessage'));
 
-            const email = document.getElementById('signInEmail').value.trim();
-            const password = document.getElementById('signInPassword').value.trim();
+        //     const email = document.getElementById('signInEmail').value.trim();
+        //     const password = document.getElementById('signInPassword').value.trim();
 
-            const response = await fetch('/signin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
+        //     const response = await fetch('/signin', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify({ email, password })
+        //     });
 
-            const data = await response.json();
+        //     const data = await response.json();
 
-            if (!response.ok) {
-                const fieldErrors = data.fieldErrors || {};
+        //     if (!response.ok) {
+        //         const fieldErrors = data.fieldErrors || {};
 
-                if (fieldErrors.email) {
-                    showError('signInErrorMessage', 'Invalid email, please check it!');
-                } else if (fieldErrors.password) {
-                    showError('signInErrorMessage', 'Password is incorrect!');
-                } else if (data.errorMessage && !fieldErrors.email && !fieldErrors.password) {
-                    showError('signInErrorMessage', 'Both fields are required');
-                }
-            } else {
-                window.location.href = data.redirectUrl;
-            }
-        });
+        //         if (fieldErrors.email) {
+        //             showError('signInErrorMessage', 'Invalid email, please check it!');
+        //         } else if (fieldErrors.password) {
+        //             showError('signInErrorMessage', 'Password is incorrect!');
+        //         } else if (data.errorMessage && !fieldErrors.email && !fieldErrors.password) {
+        //             showError('signInErrorMessage', 'Both fields are required');
+        //         }
+        //     } else {
+        //         window.location.href = data.redirectUrl;
+        //     }
+        // });
 
         document.getElementById('signUpForm').addEventListener('submit', async (event) => {
             event.preventDefault();
