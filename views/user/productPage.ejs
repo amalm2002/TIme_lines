@@ -231,7 +231,7 @@
                                 </div>
                                 <a href="/productDetails/<%= product._id %>">
                                     <div class="product-image">
-                                        <img src="/images/products/<%= product.images && product.images[0] %>"
+                                        <img src="<%= product.images && product.images[0] %>"
                                             alt="<%= product.name %>">
                                         <div class="wishlist-icon" data-product-id="<%= product._id %>">
                                             <i class="far fa-heart"></i>
@@ -431,7 +431,7 @@
         <div class="product-card">
             <a href="/productDetails/${product._id}">
                 <div class="product-image">
-                    <img src="/images/products/${product.images && product.images[0]}" alt="${product.name}">
+                    <img src="${product.images && product.images[0]}" alt="${product.name}">
                 </div>
                 <div class="product-info">
                     <h3>${product.name}</h3>

@@ -7,7 +7,8 @@
       <h1>User Profile</h1>
       <div class="profile-view">
         <div class="profile-image-container">
-          <img id="profileImage" src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="User Image">
+          <!-- <img id="profileImage" src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="User Image"> -->
+          <img id="profileImage" src="<%= user.image ? user.image : '/images/default-user-icon.jpg' %>" alt="User Image">
           <div class="profile-image-overlay">
             <button class="styled-button" onclick="toggleEdit()">Edit</button>
           </div>
@@ -103,7 +104,7 @@
             if (response.ok) {
                 document.getElementById('userName').value = newName;
                 if (result?.profileImage) {
-                    document.getElementById('profileImage').src = `/images/products/${result?.profileImage}`;
+                    document.getElementById('profileImage').src = `${result?.profileImage}`;
                 }
                 toggleEdit();
                 window.location.reload();
@@ -124,7 +125,7 @@
   
     copyBtn.addEventListener('click', () => {
         referralLinkInput.select();
-        referralLinkInput.setSelectionRange(0, 99999); // For mobile devices
+        referralLinkInput.setSelectionRange(0, 99999); 
   
         try {
             const successful = document.execCommand('copy');

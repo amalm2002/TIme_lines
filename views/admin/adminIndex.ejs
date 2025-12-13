@@ -311,7 +311,8 @@
                         <% topSellingProducts.forEach(product=> { %>
                             <li class="product-item">
                                 <div class="product-image">
-                                    <img src="/images/products/<%= product.productImage %>"
+                                    <!-- <img src="/images/products/<%= product.productImage %>" -->
+                                    <img src="<%= product.productImage %>"
                                         alt="<%= product.productName %>">
                                 </div>
                                 <div class="product-info">

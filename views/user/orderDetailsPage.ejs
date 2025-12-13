@@ -387,7 +387,7 @@
                     <% orders.productItems.forEach(productItem => { %>
                     <div class="order-details">
                         <div class="item">
-                            <img src="/images/products/<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
+                            <img src="<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
                             <div class="item-info">
                                 <h3><%= productItem.productName %></h3>
                                 <p>Category: <%= productItem.productId.category.name %></p>

@@ -12,7 +12,9 @@
                 <div class="mb-3">
                     <label for="brand" class="form-label">Brand</label>
                     <select name="brand" id="brand" required class="form-control">
-                        <option value=""><%=product.brand?.name%></option>
+                        <option value="">
+                            <%=product.brand?.name%>
+                        </option>
                         <% brands.forEach((brand)=> { %>
                             <option value="<%= brand._id %>" <%=product.brand===brand.name ? 'selected' : '' %>><%=
                                     brand.name %>
@@ -30,7 +32,9 @@
                     <label for="category" class="form-label">Category</label>
                     <select name="category" id="category" required class="form-control">
                         <!-- <option value="">select category</option> -->
-                        <option value=""><%=product.category?.name%></option>
+                        <option value="">
+                            <%=product.category?.name%>
+                        </option>
                         <% category?.forEach((cat)=> { %>
                             <option value="<%= cat._id %>" <%=product.category===cat.name ? 'selected' : '' %>><%=
                                     cat.name %>
@@ -47,15 +51,17 @@
                 </div>
                 <div class="mb-3">
                     <label for="productOffer" class="form-label">Product Offer</label>
-                    <input type="number" name="productOffer" class="form-control" id="productOffer" value="<%=product.productOffer%>">
+                    <input type="number" name="productOffer" class="form-control" id="productOffer"
+                        value="<%=product.productOffer%>">
                 </div>
-               
+
                 <div class="mb-3">
                     <label for="offerEndDate" class="form-label">Offer End Date</label>
-                    <input type="date" name="offerEndDate" class="form-control" id="offerEndDate" value="<%= new Date(product.productOfferEndDate) %>" >
+                    <input type="date" name="offerEndDate" class="form-control" id="offerEndDate"
+                        value="<%= new Date(product.productOfferEndDate) %>">
                     <small class="form-text text-muted">The end date of the offer.</small>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="stockQuantity" class="form-label">Stock Quantity</label>
                     <input type="number" name="stockQuantity" class="form-control" id="stockQuantity" min="0"
@@ -87,7 +93,7 @@
                         <% product.images.forEach((image, index)=> { %>
                             <div class="d-flex align-items-center mb-2 existing-image-container"
                                 data-index="<%= index %>">
-                                <img src="/images/products/<%= image %>" class="img-thumbnail"
+                                <img src="<%= image %>" class="img-thumbnail"
                                     style="max-width: 150px; max-height: 150px; margin-right: 10px;">
                                 <button type="button" class="btn btn-danger remove-existing-image"
                                     data-index="<%= index %>">Remove</button>
@@ -111,7 +117,7 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-        <script>
+        <!-- <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.getElementById('editProductForm');
                 const imageInput = document.getElementById('images');
@@ -122,6 +128,7 @@
                 let currentImage;
                 let fileList = [];
                 let existingImages = [];
+                
 
                 // Handle file input change
                 imageInput.addEventListener('change', function () {
@@ -272,8 +279,199 @@
 
                 populateExistingImages();
             });
-        </script>
+        </script> -->
 
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('editProductForm');
+                const imageInput = document.getElementById('images');
+                const existingImagesContainer = document.getElementById('existingImages');
+                const imagePreviews = document.getElementById('imagePreviews');
+                const croppingArea = document.getElementById('croppingArea');
+
+                let cropper;
+                let currentImage; 
+                let fileList = []; 
+                let existingImages = []; 
+                let removedImages = []; 
+
+                function populateExistingImages() {
+                    existingImages = Array.from(existingImagesContainer.querySelectorAll('img'))
+                        .map(img => img.src);
+                }
+                populateExistingImages();
+
+                imageInput.addEventListener('change', function () {
+                    const newFiles = Array.from(this.files);
+
+                    if (newFiles.length === 0) return;
+
+                    const currentTotal = existingImages.length + fileList.length;
+                    const wouldBeTotal = currentTotal + newFiles.length;
+
+                    if (wouldBeTotal > 3) {
+                        alert(`Maximum 3 images allowed. You currently have ${currentTotal} selected.`);
+                        this.value = '';
+                        return;
+                    }
+
+                    newFiles.forEach(file => fileList.push(file));
+
+                    displaySelectedImages();
+
+                    this.value = '';
+                });
+    
+                function displaySelectedImages() {
+                    imagePreviews.innerHTML = '';
+                    fileList.forEach((file, index) => {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            const container = document.createElement('div');
+                            container.className = 'image-preview-container mb-3 d-flex align-items-center';
+
+                            container.innerHTML = `
+                        <img src="${e.target.result}" class="img-thumbnail me-2" style="max-width: 150px; max-height: 150px;">
+                        <button type="button" class="btn btn-primary btn-sm me-1 crop-image">Crop</button>
+                        <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+                    `;
+
+                            imagePreviews.appendChild(container);
+
+                            container.querySelector('.crop-image').addEventListener('click', () => startCrop(container.querySelector('img')));
+                            container.querySelector('.remove-image').addEventListener('click', () => removeNewImage(container, index));
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+
+                function startCrop(imgElement) {
+                    document.getElementById('cropImage').src = imgElement.src;
+                    croppingArea.classList.remove('d-none');
+                    currentImage = imgElement;
+
+                    if (cropper) cropper.destroy();
+
+                    cropper = new Cropper(document.getElementById('cropImage'), {
+                        aspectRatio: 1,
+                        viewMode: 2,
+                        autoCropArea: 1,
+                        responsive: true,
+                        background: false,
+                        zoomable: true,
+                    });
+                }
+
+                function removeNewImage(container, index) {
+                    fileList.splice(index, 1);
+                    container.remove();
+
+                    displaySelectedImages();
+                }
+
+                document.getElementById('saveCroppedImage').addEventListener('click', function () {
+                    if (!cropper || !currentImage) return;
+
+                    cropper.getCroppedCanvas({
+                        width: 800,
+                        height: 800
+                    }).toBlob(blob => {
+                        if (blob) {
+                            const croppedFile = new File([blob], "cropped_image.jpg", { type: "image/jpeg" });
+
+                            const previewContainers = imagePreviews.querySelectorAll('.image-preview-container');
+                            for (let i = 0; i < previewContainers.length; i++) {
+                                if (previewContainers[i].querySelector('img') === currentImage) {
+                                    fileList[i] = croppedFile;
+                                    break;
+                                }
+                            }
+
+                            currentImage.src = URL.createObjectURL(blob);
+                        }
+
+                        cropper.destroy();
+                        cropper = null;
+                        croppingArea.classList.add('d-none');
+                    }, 'image/jpeg', 0.95);
+                });
+
+                document.getElementById('cancelCrop').addEventListener('click', function () {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                    croppingArea.classList.add('d-none');
+                });
+
+                existingImagesContainer.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('remove-existing-image')) {
+                        const container = e.target.closest('.existing-image-container');
+                        const imgSrc = container.querySelector('img').src;
+
+                        removedImages.push(imgSrc);
+                        container.remove();
+
+                        document.querySelectorAll('.existing-image-container').forEach((el, i) => {
+                            el.setAttribute('data-index', i);
+                            el.querySelector('.remove-existing-image').setAttribute('data-index', i);
+                        });
+
+                        existingImages = Array.from(existingImagesContainer.querySelectorAll('img'))
+                            .map(img => img.src);
+                    }
+                });
+
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    console.log('Sending new files:', fileList.length);
+                    console.log('Existing images:', existingImages.length);
+
+                    if (existingImages.length + fileList.length !== 3) {
+                        Swal.fire('Error', `You must have exactly 3 images. Current total: ${existingImages.length + fileList.length}`, 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+
+                    formData.append('name', document.getElementById('name').value.trim());
+                    formData.append('brand', document.getElementById('brand').value);
+                    formData.append('modelNumber', document.getElementById('modelNumber').value.trim());
+                    formData.append('category', document.getElementById('category').value);
+                    formData.append('price', document.getElementById('price').value);
+                    formData.append('productOffer', document.getElementById('productOffer').value || 0);
+                    formData.append('offerEndDate', document.getElementById('offerEndDate').value);
+                    formData.append('stockQuantity', document.getElementById('stockQuantity').value);
+                    formData.append('warranty', document.getElementById('warranty').value.trim());
+                    formData.append('description', document.getElementById('description').value.trim());
+
+                    existingImages.forEach(url => formData.append('existingImages', url));
+                    fileList.forEach(file => formData.append('images', file));
+                    removedImages.forEach(url => formData.append('removedImages', url));
+
+                    try {
+                        const response = await fetch(`/admin/editProduct/${document.getElementById('editProductId').value}`, {
+                            method: 'PUT',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            Swal.fire('Success', 'Product updated successfully!', 'success').then(() => {
+                                window.location.href = '/admin/products';
+                            });
+                        } else {
+                            Swal.fire('Error', result.error || 'Failed to update product', 'error');
+                        }
+                    } catch (err) {
+                        console.error('Submit error:', err);
+                        Swal.fire('Error', 'Something went wrong. Check console.', 'error');
+                    }
+                });
+            });
+        </script>
 
 
     </body>

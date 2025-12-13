@@ -4,7 +4,8 @@ const Category = require('../../model/admin/categoryModel')
 const Brand = require('../../model/admin/brandModel');
 const multer = require('multer')
 const path = require('path');
-const { error } = require('console');
+const cloudinary = require('../../../config/cloudinary');
+
 
 //add product page
 const addProductPage = async (req, res) => {
@@ -13,7 +14,6 @@ const addProductPage = async (req, res) => {
         Category.find()
     ]);
 
-    console.log("category: ", brands);
     res.render('admin/addProduct', { category, brands })
 }
 
@@ -41,13 +41,12 @@ const product = async (req, res) => {
     }
 }
 
+//add product
 const addProduct = async (req, res) => {
     try {
-        const { name, brand, modelNumber, category, price,  stockQuantity, description,productOffer=null,offerEndDate=null} = req.body;
-        console.log('full details:', req.body);
+        const { name, brand, modelNumber, category, price, stockQuantity, description, productOffer = null, offerEndDate = null } = req.body;
 
         if (!name || !brand || !modelNumber || !category || !price || !stockQuantity || !description) {
-            console.log('one thing in body is missing')
             return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
         }
 
@@ -68,7 +67,7 @@ const addProduct = async (req, res) => {
         }
 
 
-        const productOfferendDate= offerEndDate?new Date(offerEndDate):null
+        const productOfferendDate = offerEndDate ? new Date(offerEndDate) : null
         const newProduct = new Product({
             name,
             brand,
@@ -81,15 +80,23 @@ const addProduct = async (req, res) => {
             stockQuantity,
             description,
         });
-        if (!req.files || req.files.length !== 3) {
-            return res.status(500).json({ success: false, message: 'add exactly 3 images' });
-        } else {
-            const imagePaths = req.files.map(file => file?.filename);
-            console.log('image paths:', imagePaths)
-            newProduct.images = imagePaths;
-            await newProduct.save();
-            res.json({ success: true, message: 'Product added successfully!' });
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: 'Please upload at least one image.' });
         }
+
+        if (req.files.length > 3) {
+            return res.status(400).json({ success: false, message: 'Maximum 3 images allowed.' });
+        }
+
+
+        const imageUrls = req.files.map(file => file.path);
+
+        newProduct.images = imageUrls;
+
+        await newProduct.save();
+
+        res.json({ success: true, message: 'Product added successfully!' });
     } catch (error) {
         console.error('Error adding product', error);
         res.status(500).json({ success: false, message: 'Server Error: Unable to add product.' });
@@ -98,7 +105,6 @@ const addProduct = async (req, res) => {
 
 
 //disable or enabel the status
-
 const productStatus = async (req, res) => {
     const { id } = req.params;
     const status = req.query.status;
@@ -115,11 +121,9 @@ const productStatus = async (req, res) => {
         if (status === 'Active') {
             product.isActive = true;
             product.status = 'Blocked';
-            console.log('Product is active now:', product);
         } else {
             product.isActive = false;
             product.status = 'Active';
-            console.log('Product is unblocked now:', product);
         }
 
         await product.save();
@@ -152,53 +156,81 @@ const editProductPage = async (req, res) => {
 // edit products
 const editProduct = async (req, res) => {
     try {
-        const id = req.params.id
+        const id = req.params.id;
 
-        const { name, brand, modelNumber, category, price, stockQuantity, warranty, description, existingImages,productOffer=0,offerEndDate=null } = req.body;
-       
+        const {
+            name, brand, modelNumber, category, price, stockQuantity, warranty, description,
+            productOffer = 0, offerEndDate = null,
+            existingImages, removedImages
+        } = req.body;
 
-        const existingProduct=await Product.findOne({name:name})
+        console.log('existing image :', existingImages)
+        console.log('removed image :', removedImages)
+        const existingImagesArray = Array.isArray(existingImages)
+            ? existingImages
+            : (existingImages ? [existingImages] : []);
 
-        if (existingProduct===name) {
-            return res.status(400).json({error:'this product have already in Product schema'})
+        const removedImagesArray = Array.isArray(removedImages)
+            ? removedImages
+            : (removedImages ? [removedImages] : []);
+
+        if (removedImagesArray.length > 0) {
+            for (const imageUrl of removedImagesArray) {
+                try {
+                    const urlParts = imageUrl.split('/upload/');
+                    if (urlParts[1]) {
+                        const publicIdWithExtension = urlParts[1].split('?')[0];
+                        const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, "");
+
+                        const fullPublicId = `products/${publicId}`;
+
+                        await cloudinary.uploader.destroy(fullPublicId);
+                        console.log(`Deleted from Cloudinary: ${fullPublicId}`);
+                    }
+                } catch (err) {
+                    console.error(`Failed to delete image from Cloudinary: ${imageUrl}`, err);
+                }
+            }
+        }
+        const newImageUrls = req.files ? req.files.map(file => file.path) : []; // file.path = secure_url
+
+        const finalImages = [...existingImagesArray, ...newImageUrls];
+
+        if (finalImages.length !== 3) {
+            return res.status(400).json({ error: 'You must have exactly 3 images.' });
         }
 
-      
-        const existingImagesArray = Array.isArray(existingImages) ? existingImages : []
+        const productOfferendDate = offerEndDate ? new Date(offerEndDate) : null;
 
-
-        if (existingImagesArray.length + (req.files ? req.files.length : 0) !== 3) {
-            return res.status(500).json({ error: 'you must have exactly 3 images' })
-        }
-        let images = req.files ? req.files.map(file => file?.filename) : []
-
-
-
-        if (existingImagesArray.length) {
-            const existingImagesFilenames = existingImagesArray.map(img => path.basename(img))
-            images = [...existingImagesFilenames, ...images]
-        }
-
-        const productOfferendDate= offerEndDate?new Date(offerEndDate):null
-
-        const updatedProduct = await Product.findByIdAndUpdate(id, {
-
-            name, brand, modelNumber, category, price,  stockQuantity, warranty, description, images, productOffer,
-            productOfferendDate,
-
-        }, { new: true })
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            {
+                name,
+                brand,
+                modelNumber,
+                category,
+                price,
+                stockQuantity,
+                warranty,
+                description,
+                images: finalImages,
+                productOffer: productOffer ? Number(productOffer) : null,
+                productOfferendDate
+            },
+            { new: true }
+        );
 
         if (!updatedProduct) {
-
-            return res.status(404).json({ error: 'product not found' })
+            return res.status(404).json({ error: 'Product not found' });
         }
-        res.status(200).json({ message: 'product upadte successfully', updatedProduct })
+
+        res.status(200).json({ message: 'Product updated successfully', updatedProduct });
 
     } catch (error) {
-        console.error('this error will showing on edit product :', error);
-        res.status(500).json({ error: 'server error' })
+        console.error('Error in editProduct:', error);
+        res.status(500).json({ error: 'Server error' });
     }
-}
+};
 
 module.exports = {
     addProductPage,

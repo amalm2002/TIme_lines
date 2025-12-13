@@ -5,7 +5,8 @@
   <div class="user-profile-sidebar">
     <div class="user-profile-summary">
       <div class="user-profile-image-container">
-        <img src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="Profile Picture" class="user-profile-image">
+        <!-- <img src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>" alt="Profile Picture" class="user-profile-image"> -->
+        <img src="<%= user.image ?  user.image : '/images/default-user-icon.jpg' %>" alt="Profile Picture" class="user-profile-image">
       </div>
       <div class="user-profile-username-container">
         <h2 class="user-profile-username"><%=user.name%></h2>

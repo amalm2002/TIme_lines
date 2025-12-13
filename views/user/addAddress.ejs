@@ -157,7 +157,6 @@
                             }
                         })
                         .then(data => {
-                            console.log(data.page, "==========================================>");
                             document.getElementById('addAddressForm').reset();
                             if (data.page === "checkout") {
                                 window.location.href = '/checkout';

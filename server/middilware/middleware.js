@@ -1,5 +1,4 @@
 const ensureAuthenticated = (req, res, next) => {
-    console.log("req.session.user: ", req.session.user);
     if (req.session.user) {
         return next();
     }
@@ -7,7 +6,6 @@ const ensureAuthenticated = (req, res, next) => {
 };
 
 const forwardAuthenticated = (req, res, next) => {
-    console.log('req user>>>>>>',req.session.user)
     if (!req.session.user) {
         return next();
     }

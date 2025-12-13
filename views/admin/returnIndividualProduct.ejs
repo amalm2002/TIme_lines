@@ -182,7 +182,8 @@
                     <div class="order-card">
                         <div class="product-image">
                             <% if (productItem.productId.images && productItem.productId.images.length > 0) { %>
-                                <img src="/images/products/<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
+                                <!-- <img src="/images/products/<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>"> -->
+                                <img src="<%= productItem.productId.images[0] %>" alt="<%= productItem.productName %>">
                             <% } else { %>
                                 <p>No image available</p>
                             <% } %>

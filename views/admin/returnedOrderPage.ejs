@@ -185,7 +185,8 @@
                             <div class="product-image">
                                 <!-- Display product image -->
                                 <% if (item.productId && item.productId.images[0]) { %>
-                                    <img src="/images/products/<%= item.productId.images[0] %>" alt="<%= item.productName %>">
+                                    <!-- <img src="/images/products/<%= item.productId.images[0] %>" alt="<%= item.productName %>"> -->
+                                    <img src="<%= item.productId.images[0] %>" alt="<%= item.productName %>">
                                 <% } else { %>
                                     <p>No image available</p>
                                 <% } %>
