@@ -166,8 +166,8 @@
                 },
                 body: JSON.stringify({ name, email, password, conformpassword, userId })
             });
-            console.log(response)
             const data = await response.json();
+            console.log(data, '====')
 
             if (!response.ok) {
                 const fieldErrors = data.fieldErrors || {};
@@ -185,6 +185,7 @@
                 }
             } else {
                 window.location.href = data.redirectUrl;
+                console.log(window.location.href = data.redirectUrl, '=====')
             }
         });
 
