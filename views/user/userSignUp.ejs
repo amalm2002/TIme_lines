@@ -167,7 +167,6 @@
                 body: JSON.stringify({ name, email, password, conformpassword, userId })
             });
             const data = await response.json();
-            console.log(data, '====')
 
             if (!response.ok) {
                 const fieldErrors = data.fieldErrors || {};

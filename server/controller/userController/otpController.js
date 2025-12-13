@@ -10,29 +10,18 @@ const generateOTP = () => {
 // Function to send OTP via email
 const sendOtpMail = async (email, otp) => {
 
-    console.log('this is the email from .env', process.env.AUTH_EMAIL)
+    console.log('this is the email from .env',process.env.AUTH_EMAIL)
     if (!process.env.AUTH_EMAIL || !process.env.AUTH_PASS) {
         throw new Error('Email authentication environment variables not set');
     }
 
-    // let transporter = nodemailer.createTransport({
-    //     service: 'gmail',
-    //     auth: {
-    //         user: process.env.AUTH_EMAIL,
-    //         pass: process.env.AUTH_PASS
-    //     }
-    // });
-
     let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
+        service: 'gmail',
         auth: {
             user: process.env.AUTH_EMAIL,
             pass: process.env.AUTH_PASS
         }
     });
-
 
     let mailOptions = {
         from: process.env.AUTH_EMAIL,
@@ -56,53 +45,55 @@ const sendOtpMail = async (email, otp) => {
 // Function to handle OTP generation and sending
 const sendOtp = async (email) => {
     try {
-        const user = await User.findOne({ email });
-        console.log('user email :', email);
+        const user = await User.findOne({email});
+        console.log('user email :',email);
         if (user) {
             console.log('user  exist')
-        } else {
+            // throw new Error('User not found');
+        }else{
 
-            const otp = generateOTP();
-            console.log("this is generated otp :  ", otp);
-            await Otp.deleteMany({ email });
-            const newOtp = new Otp({
-                email,
-                otp
-            });
+        
 
-            await newOtp.save();
-            await sendOtpMail(email, otp);
-            console.log('otp send successfully')
-            return { success: true, message: 'OTP has been sent to your email' };
-        }
+        const otp = generateOTP();
+        console.log("this is generated otp :  ",otp);
+        await Otp.deleteMany({ email });
+        const newOtp = new Otp({
+            email,
+            otp
+        });
+
+        await newOtp.save();
+        await sendOtpMail(email, otp);
+        console.log('otp send successfully')
+        return { success: true, message: 'OTP has been sent to your email' };
+    }
     } catch (error) {
         console.error('Error generating or sending OTP:', error.message);
         throw new Error('Error generating or sending OTP');
     }
 };
 
-const forgotOtp = async (email) => {
-    try {
-        const user = await User.findOne({ email });
-        console.log('user forgot email :', email);
-        if (user) {
-            const otp = generateOTP();
-            console.log("this is generated otpfor forgot Password :  ", otp);
-            await Otp.deleteMany({ email });
-            const newOtp = new Otp({
-                email,
-                otp
-            });
+const forgotOtp=async(email)=>{
+    try {const user = await User.findOne({email});
+    console.log('user forgot email :',email);
+    if (user) {
+    const otp = generateOTP();
+    console.log("this is generated otpfor forgot Password :  ",otp);
+    await Otp.deleteMany({ email });
+    const newOtp = new Otp({
+        email,
+        otp
+    });
 
-            await newOtp.save();
-            await sendOtpMail(email, otp);
-            console.log('otp send successfully')
-            return { success: true, message: 'OTP has been sent to your email' };
-        }
-
+    await newOtp.save();
+    await sendOtpMail(email, otp);
+    console.log('otp send successfully')
+    return { success: true, message: 'OTP has been sent to your email' };
+}
+        
     } catch (error) {
         console.error('Error generating or sending OTP:', error.message);
-        throw new Error('Error generating or sending OTP');
+        throw new Error('Error generating or sending OTP'); 
     }
 }
 
