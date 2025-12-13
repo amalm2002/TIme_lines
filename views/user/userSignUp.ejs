@@ -42,19 +42,18 @@
         <div class="form-container form-container-inner sign-in-container">
             <form id="signInForm">
                 <h1>Sign in</h1>
-                 <div class="social-container">
+                <div class="social-container">
                     <a href="#" class="social"><i class="fab fa-facebook-f"></i>f</a>
                     <a href="auth/google/callback" class="social"><i class="fab fa-google-plus-g"></i>g</a>
                     <a href="#" class="social"><i class="fab fa-linkedin-in"></i>in</a>
                 </div>
                 <span>or use your account</span>
                 <div class="form-group">
-                    <input type="email" name="email" placeholder="Email" value=""
-                        class="form-control" id="signInEmail">
+                    <input type="email" name="email" placeholder="Email" value="" class="form-control" id="signInEmail">
                 </div>
                 <div class="form-group">
-                    <input type="password" name="password" placeholder="Password" value=""
-                        class="form-control" id="signInPassword">
+                    <input type="password" name="password" placeholder="Password" value="" class="form-control"
+                        id="signInPassword">
                 </div>
                 <div style="text-align: center;" class="error-message" id="signInErrorMessage"></div>
                 <a href="/forgotPasswordPage">Forgot your password?</a>
@@ -101,9 +100,9 @@
             errorDiv.innerText = '';
         }
         function clearData(fieldData) {
-            const form=document.getElementById(fieldData)
-            const input=form.querySelectorAll('input')
-            input.forEach(ele=>ele.value='')
+            const form = document.getElementById(fieldData)
+            const input = form.querySelectorAll('input')
+            input.forEach(ele => ele.value = '')
         }
 
         function showError(errorDivId, message) {
@@ -157,17 +156,17 @@
                 showError('signUpErrorMessage', 'Name should only contain alphabetic characters.');
                 return;
             }
-            const urlParams=new URLSearchParams(window.location.search)
-            const userId=urlParams.get('userId')
+            const urlParams = new URLSearchParams(window.location.search)
+            const userId = urlParams.get('userId')
 
             const response = await fetch('/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, email, password, conformpassword,userId })
+                body: JSON.stringify({ name, email, password, conformpassword, userId })
             });
-
+            console.log(response)
             const data = await response.json();
 
             if (!response.ok) {
@@ -194,7 +193,7 @@
         //     showError('signUpErrorMessage', 'You have already signed up with Google. Please sign in with Google.');
         // });
 
-       
+
 
 
     </script>
