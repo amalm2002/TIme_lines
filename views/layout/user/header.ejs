@@ -74,7 +74,7 @@
                             <img src="/userHome/img/icons/man.png" alt="User Icon" id="user-icon">
                             <div class="dropdown-content">
                                 <div class="user-info" >
-                                    <img src="<%= user.image ? '/images/products/' + user.image : '/images/default-user-icon.jpg' %>"
+                                    <img src="<%= user.image ? user.image : '/images/default-user-icon.jpg' %>"
                                         alt="User Icon" class="user-img">
                                     <span>
                                         <%= user.name %>
