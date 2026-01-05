@@ -5,7 +5,7 @@ const Product = require('../../model/admin/productModel');
 
 const CategoryOfferListPage = async (req, res) => {
     try {
-        const categoryoffer = await categoryOffer.find() .populate('categoryId', 'name');
+        const categoryoffer = await categoryOffer.find().populate('categoryId', 'name');
 
         if (!categoryoffer) {
             return res.status(404).json({ success: false, message: 'product offer not found!' });
@@ -40,16 +40,16 @@ const addCategoryOffer = async (req, res) => {
         if (!categoryId || !discountPercentage || !endDate) {
             return res.status(400).json({ success: false, message: 'Please fill all required fields!' });
         }
-        const EndDate=new Date(endDate)
-        if (EndDate<=new Date()) {
-            return res.status(400).json({success:false,message: 'End date must be in the future.' })
+        const EndDate = new Date(endDate)
+        if (EndDate <= new Date()) {
+            return res.status(400).json({ success: false, message: 'End date must be in the future.' })
         }
 
         if (discountPercentage < 0 || discountPercentage > 90) {
             return res.status(400).json({ success: false, message: 'Discount percentage must be between 0 and 90.' });
         }
 
-        const existCategoryOffer=await categoryOffer.findOne({categoryId,endDate:{$gte:new Date()}})
+        const existCategoryOffer = await categoryOffer.findOne({ categoryId, endDate: { $gte: new Date() } })
         if (existCategoryOffer) {
             return res.status(400).json({ success: false, message: 'already the category offer in this category.' });
         }
@@ -120,7 +120,7 @@ const addCategoryOffer = async (req, res) => {
             ]
         )
 
-        await categoryOffer.deleteMany({endDate:{$lt:new Date()}})
+        await categoryOffer.deleteMany({ endDate: { $lt: new Date() } })
 
         res.json({ success: true, message: 'Product offer added successfully.' });
 

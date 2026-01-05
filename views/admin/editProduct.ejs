@@ -1,6 +1,13 @@
 <%- include('../layout/admin/header') %>
 
     <body>
+        <style>
+            .error {
+                color: red;
+                font-size: 0.875em;
+                margin-top: 0.25em;
+            }
+        </style>
         <div class="container mt-4">
             <h1 class="mb-4">Edit Product</h1>
             <form id="editProductForm" enctype="multipart/form-data">
@@ -8,6 +15,7 @@
                 <div class="mb-3">
                     <label for="name" class="form-label">Product Name</label>
                     <input type="text" name="name" class="form-control" id="name" value="<%=product.name%>">
+                    <div class="error" id="nameError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="brand" class="form-label">Brand</label>
@@ -21,12 +29,14 @@
                             </option>
                             <% }) %>
                     </select>
+                    <div class="error" id="brandError"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="modelNumber" class="form-label">Model Number</label>
                     <input type="text" name="modelNumber" class="form-control" id="modelNumber"
                         value="<%=product.modelNumber%>">
+                    <div class="error" id="modelNumberError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="category" class="form-label">Category</label>
@@ -42,30 +52,36 @@
                             <!-- <input type="text " value="<%=cat.name%>"> -->
                             <% }) %>
                     </select>
+                    <div class="error" id="categoryError"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="price" class="form-label">Price</label>
                     <input type="number" name="price" class="form-control" id="price" min="0" step="0.01"
                         value="<%=product.price%>">
+                    <div class="error" id="priceError"></div>
                 </div>
+
                 <div class="mb-3">
                     <label for="productOffer" class="form-label">Product Offer</label>
                     <input type="number" name="productOffer" class="form-control" id="productOffer"
                         value="<%=product.productOffer%>">
+                    <div class="error" id="productOfferError"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="offerEndDate" class="form-label">Offer End Date</label>
                     <input type="date" name="offerEndDate" class="form-control" id="offerEndDate"
-                        value="<%= new Date(product.productOfferEndDate) %>">
+                        value="<%= product.productOfferendDate ? product.productOfferendDate.toISOString().split('T')[0] : '' %>">
                     <small class="form-text text-muted">The end date of the offer.</small>
+                    <div class="error" id="offerEndDateError"></div>
                 </div>
 
                 <div class="mb-3">
                     <label for="stockQuantity" class="form-label">Stock Quantity</label>
                     <input type="number" name="stockQuantity" class="form-control" id="stockQuantity" min="0"
                         value="<%=product.stockQuantity%>">
+                    <div class="error" id="stockQuantityError"></div>
                 </div>
                 <div class="mb-3">
                     <label for="warranty" class="form-label">Warranty</label>
@@ -75,6 +91,7 @@
                     <label for="images" class="form-label">Images</label>
                     <input type="file" name="images" class="form-control" id="images" multiple>
                     <small class="form-text text-muted">You can select up to 3 images.</small>
+                    <div class="error" id="imagesError"></div>
                 </div>
                 <div id="imagePreviews" class="mb-3"></div>
                 <div id="croppingArea" class="d-none">
@@ -105,6 +122,7 @@
                     <label for="description" class="form-label">Description</label>
                     <textarea name="description" class="form-control" id="description"
                         rows="3"><%=product.description%></textarea>
+                    <div class="error" id="descriptionError"></div>
                 </div>
                 <button type="submit" class="btn btn-primary">save Product</button>
             </form>
@@ -290,10 +308,10 @@
                 const croppingArea = document.getElementById('croppingArea');
 
                 let cropper;
-                let currentImage; 
-                let fileList = []; 
-                let existingImages = []; 
-                let removedImages = []; 
+                let currentImage;
+                let fileList = [];
+                let existingImages = [];
+                let removedImages = [];
 
                 function populateExistingImages() {
                     existingImages = Array.from(existingImagesContainer.querySelectorAll('img'))
@@ -321,7 +339,7 @@
 
                     this.value = '';
                 });
-    
+
                 function displaySelectedImages() {
                     imagePreviews.innerHTML = '';
                     fileList.forEach((file, index) => {
@@ -425,12 +443,53 @@
                 form.addEventListener('submit', async function (e) {
                     e.preventDefault();
 
-                    console.log('Sending new files:', fileList.length);
-                    console.log('Existing images:', existingImages.length);
-
                     if (existingImages.length + fileList.length !== 3) {
                         Swal.fire('Error', `You must have exactly 3 images. Current total: ${existingImages.length + fileList.length}`, 'error');
                         return;
+                    }
+
+                    const name = document.getElementById('name').value.trim();
+                    const brand = document.getElementById('brand').value.trim();
+                    const modelNumber = document.getElementById('modelNumber').value.trim();
+                    const category = document.getElementById('category').value.trim();
+                    const price = document.getElementById('price').value.trim();
+                    const productOffer = document.getElementById('productOffer').value.trim()
+                    const offerEndDate = document.getElementById('offerEndDate').value.trim()
+                    const stockQuantity = document.getElementById('stockQuantity').value.trim();
+                    const description = document.getElementById('description').value.trim();
+                    const images = document.getElementById('images').files;
+
+                    if (!name || !brand || !modelNumber || !category || !price || !stockQuantity || !description) {
+                        showErrorMessages({ name, brand, modelNumber, category, price, stockQuantity, description });
+                        return;
+                    }
+
+                    if (productOffer && (!offerEndDate || offerEndDate === '')) {
+                        document.getElementById('offerEndDateError').textContent = 'Offer end date is required when offer is provided.';
+                        document.getElementById('offerEndDateError').style.color = 'red';
+                        return;
+                    } else {
+                        document.getElementById('offerEndDateError').textContent = '';
+                    }
+
+                    if (productOffer) {
+                        if (parseFloat(productOffer) > parseFloat(price)) {
+                            document.getElementById('productOfferError').textContent = 'Offer price cannot be greater than the actual price.';
+                            document.getElementById('productOfferError').style.color = 'red';
+                            return;
+                        } else {
+                            document.getElementById('productOfferError').textContent = '';
+                        }
+
+                        const offerEndDateObj = new Date(offerEndDate);
+                        const today = new Date();
+                        if (offerEndDateObj <= today) {
+                            document.getElementById('offerEndDateError').textContent = 'Offer end date must be a future date.';
+                            document.getElementById('offerEndDateError').style.color = 'red';
+                            return;
+                        } else {
+                            document.getElementById('offerEndDateError').textContent = '';
+                        }
                     }
 
                     const formData = new FormData();
@@ -471,6 +530,18 @@
                     }
                 });
             });
+
+            function showErrorMessages(fields) {
+                for (const [field, value] of Object.entries(fields)) {
+                    const errorElement = document.getElementById(`${field}Error`);
+                    if (!value) {
+                        errorElement.textContent = `Please enter ${field}`;
+                        errorElement.style.color = 'red';
+                    } else {
+                        errorElement.textContent = '';
+                    }
+                }
+            }
         </script>
 
 
